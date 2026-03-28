@@ -383,3 +383,17 @@ export const SHOP_ITEMS: ShopItem[] = [
 export const SHOP_ITEM_MAP: Record<string, ShopItem> = Object.fromEntries(
   SHOP_ITEMS.map(item => [item.id, item])
 );
+
+// --- Daily Rewards ---
+// Rewards scale with streak (day 1-7)
+export const DAILY_REWARDS: { gold: number; seeds: Record<string, number>; pots: number }[] = [
+  { gold: 200, seeds: { linh_lan: 3 }, pots: 0 },                          // Day 1
+  { gold: 300, seeds: { linh_lan: 2, hoa_cuc: 2 }, pots: 0 },              // Day 2
+  { gold: 500, seeds: { hoa_cuc: 3, hoa_hong: 1 }, pots: 1 },              // Day 3
+  { gold: 800, seeds: { hoa_hong: 2, hong_trang: 1 }, pots: 0 },           // Day 4
+  { gold: 1200, seeds: { hong_trang: 2, hoa_tulip: 1 }, pots: 1 },         // Day 5
+  { gold: 2000, seeds: { hoa_tulip: 2 }, pots: 0 },                        // Day 6
+  { gold: 5000, seeds: { hoa_huong_duong: 1 }, pots: 2 },                  // Day 7 (jackpot)
+];
+
+export const DAILY_REWARD_COOLDOWN_MS = 24 * 60 * 60 * 1000; // 24 hours

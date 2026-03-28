@@ -24,6 +24,8 @@ import {
   MACHINES,
   SHOP_ITEM_MAP,
   POT_UPGRADE_CHAIN,
+  DAILY_REWARDS,
+  DAILY_REWARD_COOLDOWN_MS,
   CLOUD_LAYER_COUNT,
   SLOTS_PER_LAYER,
   PEST_SPAWN_CHANCE,
@@ -260,6 +262,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
   selectedPotId: null,
   selectedFertilizerId: null,
   activeCloudIndex: 0,
+
+  // --- Sandbox/Production ---
+  isSandbox: IS_SANDBOX,
+
+  // --- Daily Reward ---
+  lastDailyReward: null,
+  dailyRewardStreak: 0,
 
   // --- UI Actions ---
   setActiveTool: (tool) => set({ activeTool: tool }),
@@ -854,6 +863,84 @@ export const useGameStore = create<GameStore>((set, get) => ({
       selectedFertilizerId: null,
       currentView: "cloud",
     });
+  },
+
+  // --- Sandbox Toggle ---
+  toggleSandbox: () => {
+    set((s) => {
+      const newIsSandbox = !s.isSandbox;
+      return {
+        isSandbox: newIsSandbox,
+        user: newIsSandbox ? createSandboxUser() : createProductionUser(),
+        inventory: newIsSandbox ? createSandboxInventory() : createProductionInventory(),
+        clouds: createInitialClouds(),
+        machines: [
+          { id: "juicer", craftingRecipeIndex: null, craftingRemainingTime: 0, hasProduct: false },
+          { id: "oven", craftingRecipeIndex: null, craftingRemainingTime: 0, hasProduct: false },
+          { id: "dryer", craftingRecipeIndex: null, craftingRemainingTime: 0, hasProduct: false },
+        ],
+        monkey: { isActive: false, bananasRemaining: newIsSandbox ? 99 : 0, autoPlantSeedId: null, currentSlotIndex: 0, isActing: false },
+        activeCloudIndex: 0,
+        activeTool: null,
+        selectedSeedId: null,
+        selectedPotId: null,
+        selectedFertilizerId: null,
+      };
+    });
+  },
+
+  // --- Daily Reward ---
+  canClaimDailyReward: () => {
+    const state = get();
+    if (!state.lastDailyReward) return true;
+    return Date.now() - state.lastDailyReward >= DAILY_REWARD_COOLDOWN_MS;
+  },
+
+  claimDailyReward: () => {
+    const state = get();
+    if (!state.canClaimDailyReward()) return false;
+
+    const now = Date.now();
+    let newStreak = state.dailyRewardStreak;
+
+    // Check if streak should continue or reset
+    if (state.lastDailyReward) {
+      const hoursSince = (now - state.lastDailyReward) / (1000 * 60 * 60);
+      if (hoursSince > 48) {
+        newStreak = 0; // Reset if more than 48 hours
+      }
+    }
+
+    newStreak = (newStreak + 1) % 7;
+    const reward = DAILY_REWARDS[newStreak];
+
+    set((s) => {
+      const newUser = { ...s.user };
+      newUser.gold += reward.gold;
+
+      const newSeeds = { ...s.inventory.seeds };
+      for (const [plantId, amount] of Object.entries(reward.seeds)) {
+        newSeeds[plantId] = (newSeeds[plantId] ?? 0) + amount;
+      }
+
+      const newPots = { ...s.inventory.pots };
+      if (reward.pots > 0) {
+        newPots.pot_soil = (newPots.pot_soil ?? 0) + reward.pots;
+      }
+
+      return {
+        user: newUser,
+        inventory: {
+          ...s.inventory,
+          seeds: newSeeds,
+          pots: newPots,
+        },
+        lastDailyReward: now,
+        dailyRewardStreak: newStreak,
+      };
+    });
+
+    return true;
   },
 }));
 

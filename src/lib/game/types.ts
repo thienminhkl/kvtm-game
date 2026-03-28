@@ -222,6 +222,16 @@ export interface GameStore {
   saveGame: () => void;
   loadGame: () => boolean;
   resetGame: () => void;
+
+  // Sandbox toggle
+  isSandbox: boolean;
+  toggleSandbox: () => void;
+
+  // Daily reward
+  lastDailyReward: number | null; // timestamp
+  dailyRewardStreak: number;
+  canClaimDailyReward: () => boolean;
+  claimDailyReward: () => boolean;
 }
 
 // --- Machines ---

@@ -1,4 +1,4 @@
-# Technical Context: Next.js Starter Template
+# Technical Context: KVTM Web Remake
 
 ## Technology Stack
 
@@ -8,6 +8,7 @@
 | React        | 19.x    | UI library                      |
 | TypeScript   | 5.9.x   | Type-safe JavaScript            |
 | Tailwind CSS | 4.x     | Utility-first CSS               |
+| Zustand      | 5.x     | Global state management         |
 | Bun          | Latest  | Package manager & runtime       |
 
 ## Development Environment
@@ -57,9 +58,10 @@ bun typecheck      # Run TypeScript type checking
 
 ```json
 {
-  "next": "^16.1.3", // Framework
-  "react": "^19.2.3", // UI library
-  "react-dom": "^19.2.3" // React DOM
+  "next": "^16.1.3",
+  "react": "^19.2.3",
+  "react-dom": "^19.2.3",
+  "zustand": "^5.0.12"
 }
 ```
 
@@ -78,66 +80,68 @@ bun typecheck      # Run TypeScript type checking
 }
 ```
 
+## Game Architecture
+
+### State Management (Zustand)
+
+- Single global store at `src/lib/game/store.ts`
+- Sandbox mode: all items x99, level 99
+- Actions: plantSeed, harvest, waterPlant, removePest, fertilize, pickPot, placePot
+- Growth engine: 1-second tick interval for plant countdown
+- Monkey AI: FSM-based auto-scan every 2 seconds
+
+### Module Structure
+
+```
+src/lib/game/
+├── index.ts       # Barrel exports
+├── types.ts       # TypeScript interfaces & enums
+├── constants.ts   # Game data catalogs & config
+├── store.ts       # Zustand store + actions
+└── engine.ts      # React hook for timer intervals
+```
+
+### Design Principles
+
+- Data separated from UI (store = data, components = display)
+- All game logic in store actions, not in components
+- Time-based growth with pause on pest/thirsty states
+- Pot buffs stack additively with fertilizer buffs
+- Monkey AI uses finite state machine (slot scanning)
+
 ## File Structure
 
 ```
 /
-├── .gitignore              # Git ignore rules
-├── package.json            # Dependencies and scripts
-├── bun.lock                # Bun lockfile
-├── next.config.ts          # Next.js configuration
-├── tsconfig.json           # TypeScript configuration
-├── postcss.config.mjs      # PostCSS (Tailwind) config
-├── eslint.config.mjs       # ESLint configuration
-├── public/                 # Static assets
-│   └── .gitkeep
-└── src/                    # Source code
-    └── app/                # Next.js App Router
-        ├── layout.tsx      # Root layout
-        ├── page.tsx        # Home page
-        ├── globals.css     # Global styles
-        └── favicon.ico     # Site icon
+├── src/
+│   ├── app/                    # Next.js App Router
+│   │   ├── layout.tsx          # Root layout
+│   │   ├── page.tsx            # Home page
+│   │   ├── globals.css         # Global styles
+│   │   └── favicon.ico         # Site icon
+│   └── lib/
+│       └── game/               # Game engine module
+│           ├── index.ts
+│           ├── types.ts
+│           ├── constants.ts
+│           ├── store.ts
+│           └── engine.ts
+├── .kilocode/                  # AI context & recipes
+├── package.json
+├── tsconfig.json
+├── next.config.ts
+├── postcss.config.mjs
+└── eslint.config.mjs
 ```
-
-## Technical Constraints
-
-### Starting Point
-
-- Minimal structure - expand as needed
-- No database by default (use recipe to add)
-- No authentication by default (add when needed)
-
-### Browser Support
-
-- Modern browsers (ES2020+)
-- No IE11 support
 
 ## Performance Considerations
 
-### Image Optimization
+- Zustand selectors for minimal re-renders
+- Growth tick updates only slots with active plants
+- Monkey AI runs only when active and bananas > 0
+- Cloud layers rendered on-demand (active layer priority)
 
-- Use Next.js `Image` component for optimization
-- Place images in `public/` directory
+## Browser Support
 
-### Bundle Size
-
-- Tree-shaking enabled by default
-- Tailwind CSS purges unused styles
-
-### Core Web Vitals
-
-- Server Components reduce client JavaScript
-- Streaming and Suspense for better UX
-
-## Deployment
-
-### Build Output
-
-- Server-rendered pages by default
-- Can be configured for static export
-
-### Environment Variables
-
-- None required for base template
-- Add as needed for features
-- Use `.env.local` for local development
+- Modern browsers (ES2020+)
+- No IE11 support

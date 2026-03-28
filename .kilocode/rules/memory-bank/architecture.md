@@ -1,4 +1,4 @@
-# System Patterns: Next.js Starter Template
+# System Patterns: KVTM Web Remake
 
 ## Architecture Overview
 
@@ -6,115 +6,107 @@
 src/
 ├── app/                    # Next.js App Router
 │   ├── layout.tsx          # Root layout + metadata
-│   ├── page.tsx            # Home page
+│   ├── page.tsx            # Home page (game view)
 │   ├── globals.css         # Tailwind imports + global styles
 │   └── favicon.ico         # Site icon
-└── (expand as needed)
-    ├── components/         # React components (add when needed)
-    ├── lib/                # Utilities and helpers (add when needed)
-    └── db/                 # Database files (add via recipe)
+├── lib/
+│   └── game/               # Game engine (data + logic, no UI)
+│       ├── index.ts        # Barrel exports
+│       ├── types.ts        # All TypeScript interfaces & enums
+│       ├── constants.ts    # Plants, pots, tools, config values
+│       ├── store.ts        # Zustand store + all game actions
+│       └── engine.ts       # React hook for game loop timers
+└── components/             # (Phase 2+) React UI components
+    ├── game/               # Game-specific components
+    └── ui/                 # Reusable UI primitives
 ```
 
 ## Key Design Patterns
 
-### 1. App Router Pattern
+### 1. Data-UI Separation (Core Principle)
 
-Uses Next.js App Router with file-based routing:
-```
-src/app/
-├── page.tsx           # Route: /
-├── about/page.tsx     # Route: /about
-├── blog/
-│   ├── page.tsx       # Route: /blog
-│   └── [slug]/page.tsx # Route: /blog/:slug
-└── api/
-    └── route.ts       # API Route: /api
-```
-
-### 2. Component Organization Pattern (When Expanding)
+Game state and logic live entirely in `src/lib/game/`. Components are pure display + interaction:
 
 ```
-src/components/
-├── ui/                # Reusable UI components (Button, Card, etc.)
-├── layout/            # Layout components (Header, Footer)
-├── sections/          # Page sections (Hero, Features, etc.)
-└── forms/             # Form components
+Store (data + logic)  →  Components (display + events)
+     ↑                           ↓
+  engine.ts              user interactions
 ```
 
-### 3. Server Components by Default
+- Store holds ALL game data (user, inventory, clouds, monkey)
+- Store actions contain ALL game logic (plant, harvest, water, etc.)
+- Components ONLY read state via selectors and call actions
 
-All components are Server Components unless marked with `"use client"`:
+### 2. Zustand Store Pattern
+
+Single global store with typed actions:
+```typescript
+// Read state in components
+const gold = useGameStore((s) => s.user.gold);
+const slot = useGameStore((s) => s.clouds[0].slots[0]);
+
+// Call actions
+useGameStore.getState().plantSeed(slotId, "hoa_cuc");
+```
+
+### 3. Growth Engine Pattern
+
+Timer-based game loop using `setInterval`:
+- 1-second tick decrements plant `remainingTime`
+- Tick skips plants with `isPest` or `isThirsty` (paused)
+- Random events (pest spawn, thirsty) checked per tick
+- Monkey AI runs on separate 2-second interval
+
+### 4. Monkey AI FSM (Finite State Machine)
+
+Scans slots sequentially (0→8) on active cloud layer:
+```
+Scan slot → Has pest? → removePest()
+         → Ready to harvest? → harvest()
+         → Empty pot + auto-seed? → plantSeed()
+         → Next slot (mod 9)
+```
+
+### 5. Server Components by Default
+
+All components are Server Components unless marked with `"use client"`. Game components must be client components since they interact with Zustand store:
 ```tsx
-// Server Component (default) - can fetch data, access DB
-export default function Page() {
-  return <div>Server rendered</div>;
-}
-
-// Client Component - for interactivity
 "use client";
-export default function Counter() {
-  const [count, setCount] = useState(0);
-  return <button onClick={() => setCount(c => c + 1)}>{count}</button>;
-}
+import { useGameStore } from "@/lib/game";
 ```
 
-### 4. Layout Pattern
+## Data Flow
 
-Layouts wrap pages and can be nested:
-```tsx
-// src/app/layout.tsx - Root layout
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en">
-      <body>{children}</body>
-    </html>
-  );
-}
+```
+User clicks slot with "plant" tool active
+  → Component calls store.plantSeed(slotId, seedId)
+  → Store checks inventory, validates slot
+  → Store updates: inventory -= 1, slot.plant = new Plant
+  → React re-renders affected components via Zustand selectors
 
-// src/app/dashboard/layout.tsx - Nested layout
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex">
-      <Sidebar />
-      <main>{children}</main>
-    </div>
-  );
-}
+Growth Engine tick (every 1s)
+  → store.tick() called
+  → Scans all slots, decrements remainingTime
+  → Random pest/thirsty events
+  → React re-renders plant progress displays
 ```
 
 ## Styling Conventions
 
 ### Tailwind CSS Usage
 - Utility classes directly on elements
-- Component composition for repeated patterns
 - Responsive: `sm:`, `md:`, `lg:`, `xl:`
-
-### Common Patterns
-```tsx
-// Container
-<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-// Responsive grid
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-// Flexbox centering
-<div className="flex items-center justify-center">
-```
+- Game UI: fixed layout sizes, animated transitions for plant growth
 
 ## File Naming Conventions
 
-- Components: PascalCase (`Button.tsx`, `Header.tsx`)
-- Utilities: camelCase (`utils.ts`, `helpers.ts`)
+- Components: PascalCase (`PotSlot.tsx`, `Toolbar.tsx`)
+- Game module: camelCase (`store.ts`, `engine.ts`, `types.ts`)
 - Pages/Routes: lowercase (`page.tsx`, `layout.tsx`)
-- Directories: kebab-case (`api-routes/`) or lowercase (`components/`)
+- Directories: kebab-case (`game-ui/`) or lowercase (`game/`)
 
 ## State Management
 
-For simple needs:
-- `useState` for local component state
-- `useContext` for shared state
-- Server Components for data fetching
-
-For complex needs (add when necessary):
-- Zustand for client state
-- React Query for server state
+- **Zustand** for ALL game state (user, inventory, clouds, UI state)
+- **useState** for local component UI state (modals, panels)
+- **No server state** yet (Sandbox mode is fully client-side)

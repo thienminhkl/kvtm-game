@@ -9,22 +9,22 @@ interface PotSlotProps {
 }
 
 function formatTime(seconds: number): string {
-  if (seconds <= 0) return "SẴN SÀNG";
+  if (seconds <= 0) return "0s";
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
   const s = seconds % 60;
-  if (h > 0) return `${h}h ${m}m ${s}s`;
-  if (m > 0) return `${m}m ${s}s`;
+  if (h > 0) return `${h}h${m > 0 ? `${m}m` : ""}${s > 0 ? `${s}s` : ""}`;
+  if (m > 0) return `${m}m${s > 0 ? `${s}s` : ""}`;
   return `${s}s`;
 }
 
-function getStageLabel(stage: PlantGrowthStage): string {
+function getStageEmoji(stage: PlantGrowthStage): string {
   switch (stage) {
     case 0: return "";
-    case 1: return "🌱 Mầm";
-    case 2: return "🌿 Lớn";
-    case 3: return "🪴 Lớn nhanh";
-    case 4: return "🌸 Chín";
+    case 1: return "🌱";
+    case 2: return "🌿";
+    case 3: return "🪴";
+    case 4: return "🌸";
   }
 }
 
@@ -49,6 +49,15 @@ function getPotColor(potId: string): string {
   }
 }
 
+function getTimerColor(remainingTime: number, totalGrowTime: number): string {
+  if (remainingTime <= 0) return "text-green-400";
+  const ratio = remainingTime / totalGrowTime;
+  if (ratio > 0.75) return "text-blue-300";
+  if (ratio > 0.5) return "text-cyan-300";
+  if (ratio > 0.25) return "text-yellow-300";
+  return "text-orange-300";
+}
+
 export default function PotSlot({ slot }: PotSlotProps) {
   const activeTool = useGameStore((s) => s.activeTool);
   const selectedSeedId = useGameStore((s) => s.selectedSeedId);
@@ -71,7 +80,7 @@ export default function PotSlot({ slot }: PotSlotProps) {
   );
 
   const progress = useMemo(() => {
-    if (!plant) return 0;
+    if (!plant || plant.totalGrowTime <= 0) return 0;
     return Math.min(1, 1 - plant.remainingTime / plant.totalGrowTime);
   }, [plant]);
 
@@ -131,7 +140,6 @@ export default function PotSlot({ slot }: PotSlotProps) {
     }
   })();
 
-  // Visual hint when placing pot
   const showPlacePotHint = activeTool === "tool_place_pot" && !potId && selectedPotId;
   const potDef = potId ? POTS[potId] : null;
   const plantDef = plant ? PLANTS[plant.plantId] : null;
@@ -151,7 +159,7 @@ export default function PotSlot({ slot }: PotSlotProps) {
         ${showPlacePotHint ? "border-green-500 bg-green-900/30 animate-pulse" : ""}
         ${plant?.isPest ? "ring-2 ring-red-500 animate-pulse" : ""}
         ${plant?.isThirsty ? "ring-2 ring-yellow-500" : ""}
-        ${plant && plant.remainingTime <= 0 ? "ring-2 ring-green-400" : ""}
+        ${plant && plant.remainingTime <= 0 ? "ring-2 ring-green-400 animate-pulse" : ""}
       `}
     >
       {/* Empty slot - no pot */}
@@ -182,15 +190,18 @@ export default function PotSlot({ slot }: PotSlotProps) {
       {/* Plant growing or ready */}
       {plant && plantDef && (
         <>
+          {/* Growth stage emoji */}
           <span className={`text-lg ${getStageColor(growthStage)} rounded px-1`}>
-            {getStageLabel(growthStage).split(" ")[0]}
+            {getStageEmoji(growthStage)}
           </span>
 
-          <span className="text-[10px] text-white font-medium truncate w-full text-center select-none">
+          {/* Plant name */}
+          <span className="text-[10px] text-white font-semibold truncate w-full text-center select-none">
             {plantDef.name}
           </span>
 
-          <div className="w-[85%] h-1.5 bg-black/40 rounded-full overflow-hidden">
+          {/* Progress bar */}
+          <div className="w-[85%] h-2 bg-black/40 rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-300 ${
                 growthStage === 4
@@ -203,9 +214,10 @@ export default function PotSlot({ slot }: PotSlotProps) {
             />
           </div>
 
+          {/* Status / Timer */}
           {plant.remainingTime <= 0 ? (
-            <span className="text-[10px] text-green-400 font-bold select-none">
-              Thu hoạch!
+            <span className="text-[11px] text-green-400 font-bold select-none">
+              THU HOẠCH!
             </span>
           ) : plant.isPest ? (
             <span className="text-[10px] text-red-400 font-bold select-none">
@@ -216,15 +228,22 @@ export default function PotSlot({ slot }: PotSlotProps) {
               💧 Khát nước
             </span>
           ) : (
-            <span className="text-[9px] text-neutral-300 select-none">
-              {formatTime(plant.remainingTime)}
+            <span
+              className={`text-[11px] font-bold tabular-nums select-none ${getTimerColor(
+                plant.remainingTime,
+                plant.totalGrowTime
+              )}`}
+            >
+              ⏱ {formatTime(plant.remainingTime)}
             </span>
           )}
 
+          {/* Fertilized indicator */}
           {plant.isFertilized && (
             <span className="absolute top-0.5 right-0.5 text-[8px]">✨</span>
           )}
 
+          {/* Pot tier indicator */}
           {potDef && potDef.expBuffPercent > 0 && (
             <span className="absolute bottom-0.5 right-0.5 text-[8px] text-neutral-400">
               +{potDef.expBuffPercent}%

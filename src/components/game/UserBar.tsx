@@ -35,7 +35,7 @@ export default function UserBar() {
       <div className="flex items-center gap-1">
         <span className="text-lg">💰</span>
         <span className="text-sm font-bold text-yellow-300">
-          {user.gold.toLocaleString()}
+          {user.gold.toLocaleString("en-US")}
         </span>
       </div>
 

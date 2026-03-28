@@ -8,16 +8,20 @@ import type {
   CloudLayer,
   Slot,
   SlotPlant,
+  MachineState,
+  MachineId,
   PlantId,
   PotId,
   FertilizerId,
   PestType,
   PlantGrowthStage,
+  GameView,
 } from "./types";
 import {
   PLANTS,
   POTS,
   FERTILIZERS,
+  MACHINES,
   CLOUD_LAYER_COUNT,
   SLOTS_PER_LAYER,
   PEST_SPAWN_CHANCE,
@@ -183,6 +187,17 @@ export const useGameStore = create<GameStore>((set, get) => ({
     currentSlotIndex: 0,
     isActing: false,
   },
+
+  // --- View State ---
+  currentView: "cloud" as GameView,
+  setCurrentView: (view) => set({ currentView: view }),
+
+  // --- Machine State ---
+  machines: [
+    { id: "juicer" as MachineId, craftingRecipeIndex: null, craftingRemainingTime: 0, hasProduct: false },
+    { id: "oven" as MachineId, craftingRecipeIndex: null, craftingRemainingTime: 0, hasProduct: false },
+    { id: "dryer" as MachineId, craftingRecipeIndex: null, craftingRemainingTime: 0, hasProduct: false },
+  ] as MachineState[],
 
   // --- UI State ---
   activeTool: null,
@@ -552,6 +567,88 @@ export const useGameStore = create<GameStore>((set, get) => ({
       user: { ...s.user, gold: s.user.gold - amount },
     }));
     return true;
+  },
+
+  // --- Machines ---
+  startCraft: (machineId, recipeIndex) => {
+    set((s) => {
+      const machineDef = MACHINES[machineId];
+      if (!machineDef) return s;
+      const recipe = machineDef.recipes[recipeIndex];
+      if (!recipe) return s;
+
+      // Check machine is idle
+      const machineState = s.machines.find(m => m.id === machineId);
+      if (!machineState || machineState.craftingRecipeIndex !== null || machineState.hasProduct) return s;
+
+      // Check ingredients
+      for (const ing of recipe.ingredients) {
+        if ((s.inventory.seeds[ing.plantId] ?? 0) < ing.amount) return s;
+      }
+
+      // Consume ingredients
+      const newSeeds = { ...s.inventory.seeds };
+      for (const ing of recipe.ingredients) {
+        newSeeds[ing.plantId] = (newSeeds[ing.plantId] ?? 0) - ing.amount;
+      }
+
+      // Start crafting
+      const newMachines = s.machines.map(m =>
+        m.id === machineId
+          ? { ...m, craftingRecipeIndex: recipeIndex, craftingRemainingTime: recipe.craftTimeSeconds, hasProduct: false }
+          : m
+      );
+
+      return {
+        inventory: { ...s.inventory, seeds: newSeeds },
+        machines: newMachines,
+      };
+    });
+  },
+
+  collectProduct: (machineId) => {
+    set((s) => {
+      const machineState = s.machines.find(m => m.id === machineId);
+      if (!machineState || !machineState.hasProduct || machineState.craftingRecipeIndex === null) return s;
+
+      const machineDef = MACHINES[machineId];
+      const recipe = machineDef?.recipes[machineState.craftingRecipeIndex];
+      if (!recipe) return s;
+
+      const newMachines = s.machines.map(m =>
+        m.id === machineId
+          ? { ...m, craftingRecipeIndex: null, craftingRemainingTime: 0, hasProduct: false }
+          : m
+      );
+
+      const newUser = { ...s.user };
+      newUser.gold += recipe.goldReward;
+      newUser.exp += recipe.expReward;
+      while (newUser.exp >= newUser.expToNextLevel) {
+        newUser.exp -= newUser.expToNextLevel;
+        newUser.level += 1;
+        newUser.expToNextLevel = getExpForLevel(newUser.level);
+      }
+
+      return { user: newUser, machines: newMachines };
+    });
+  },
+
+  machineTick: () => {
+    set((s) => {
+      let changed = false;
+      const newMachines = s.machines.map(m => {
+        if (m.craftingRecipeIndex === null || m.hasProduct) return m;
+        changed = true;
+        const newTime = m.craftingRemainingTime - 1;
+        if (newTime <= 0) {
+          return { ...m, craftingRemainingTime: 0, hasProduct: true };
+        }
+        return { ...m, craftingRemainingTime: newTime };
+      });
+      if (!changed) return s;
+      return { machines: newMachines };
+    });
   },
 }));
 

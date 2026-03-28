@@ -31,6 +31,10 @@ export type FertilizerId = "fertilizer_basic" | "fertilizer_advanced" | "fertili
 
 export type PlantGrowthStage = 0 | 1 | 2 | 3 | 4; // 0=empty, 1=25%, 2=50%, 3=75%, 4=100% ready
 
+export type MachineId = "juicer" | "oven" | "dryer";
+
+export type GameView = "cloud" | "ground";
+
 // --- Data Models ---
 
 export interface PlantDefinition {
@@ -197,4 +201,44 @@ export interface GameStore {
   addExp: (amount: number) => void;
   addGold: (amount: number) => void;
   spendGold: (amount: number) => boolean;
+
+  // View
+  currentView: GameView;
+  setCurrentView: (view: GameView) => void;
+
+  // Machines
+  machines: MachineState[];
+  startCraft: (machineId: MachineId, recipeIndex: number) => void;
+  collectProduct: (machineId: MachineId) => void;
+  machineTick: () => void;
+}
+
+// --- Machines ---
+
+export interface RecipeIngredient {
+  plantId: PlantId;
+  amount: number;
+}
+
+export interface Recipe {
+  name: string;
+  icon: string;
+  ingredients: RecipeIngredient[];
+  craftTimeSeconds: number;
+  goldReward: number;
+  expReward: number;
+}
+
+export interface MachineDefinition {
+  id: MachineId;
+  name: string;
+  icon: string;
+  recipes: Recipe[];
+}
+
+export interface MachineState {
+  id: MachineId;
+  craftingRecipeIndex: number | null; // null = idle
+  craftingRemainingTime: number; // seconds left
+  hasProduct: boolean; // ready to collect
 }

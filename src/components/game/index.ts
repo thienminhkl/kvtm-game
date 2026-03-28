@@ -6,4 +6,6 @@ export { default as CloudNavigator } from "./CloudNavigator";
 export { default as UserBar } from "./UserBar";
 export { default as InventoryPanel } from "./InventoryPanel";
 export { default as BirdAI } from "./BirdAI";
+export { default as GroundView } from "./GroundView";
+export { default as MachineUI } from "./MachineUI";
 export { default as GameBoard } from "./GameBoard";

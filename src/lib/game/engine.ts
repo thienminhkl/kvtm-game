@@ -14,9 +14,11 @@ export function useGameEngine() {
   const monkeyRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    // Growth tick every second
+    // Growth tick + machine tick every second
     tickRef.current = setInterval(() => {
-      useGameStore.getState().tick();
+      const state = useGameStore.getState();
+      state.tick();
+      state.machineTick();
     }, 1000);
 
     // Monkey AI tick every 0.2s

@@ -7,10 +7,12 @@ import type {
   PotDefinition,
   FertilizerDefinition,
   ToolDefinition,
+  MachineDefinition,
   PlantId,
   PotId,
   FertilizerId,
   PestType,
+  MachineId,
 } from "./types";
 
 // --- Plants Catalog ---
@@ -252,3 +254,87 @@ export const THIRSTY_TIMEOUT_SECONDS = 120;
 
 // --- Monkey AI Config ---
 export const MONKEY_ACTION_INTERVAL_MS = 200; // 0.2s per action
+
+// --- Machines ---
+
+export const MACHINES: Record<MachineId, MachineDefinition> = {
+  juicer: {
+    id: "juicer",
+    name: "Máy Ép Trái Cây",
+    icon: "🧃",
+    recipes: [
+      {
+        name: "Nước Linh Lan",
+        icon: "🥤",
+        ingredients: [{ plantId: "linh_lan", amount: 3 }],
+        craftTimeSeconds: 30,
+        goldReward: 500,
+        expReward: 20,
+      },
+      {
+        name: "Nước Hoa Cúc",
+        icon: "🍵",
+        ingredients: [{ plantId: "hoa_cuc", amount: 3 }],
+        craftTimeSeconds: 60,
+        goldReward: 1200,
+        expReward: 50,
+      },
+      {
+        name: "Nước Hồng",
+        icon: "🍷",
+        ingredients: [{ plantId: "hoa_hong", amount: 2 }],
+        craftTimeSeconds: 120,
+        goldReward: 2500,
+        expReward: 100,
+      },
+    ],
+  },
+  oven: {
+    id: "oven",
+    name: "Máy Nướng Bánh",
+    icon: "🧁",
+    recipes: [
+      {
+        name: "Bánh Cúc",
+        icon: "🍰",
+        ingredients: [{ plantId: "hoa_cuc", amount: 5 }],
+        craftTimeSeconds: 90,
+        goldReward: 2000,
+        expReward: 80,
+      },
+      {
+        name: "Bánh Tulip",
+        icon: "🎂",
+        ingredients: [{ plantId: "hoa_tulip", amount: 3 }],
+        craftTimeSeconds: 180,
+        goldReward: 8000,
+        expReward: 250,
+      },
+    ],
+  },
+  dryer: {
+    id: "dryer",
+    name: "Máy Sấy",
+    icon: "🌬️",
+    recipes: [
+      {
+        name: "Hoa Hồng Sấy",
+        icon: "🥀",
+        ingredients: [{ plantId: "hoa_hong", amount: 4 }],
+        craftTimeSeconds: 60,
+        goldReward: 3000,
+        expReward: 120,
+      },
+      {
+        name: "Hoa Hướng Dương Sấy",
+        icon: "🌻",
+        ingredients: [{ plantId: "hoa_huong_duong", amount: 2 }],
+        craftTimeSeconds: 150,
+        goldReward: 12000,
+        expReward: 400,
+      },
+    ],
+  },
+};
+
+export const MACHINE_IDS: MachineId[] = ["juicer", "oven", "dryer"];

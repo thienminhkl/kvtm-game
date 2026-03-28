@@ -12,4 +12,6 @@ export { default as MachineUI } from "./MachineUI";
 export { default as PotUpgrade } from "./PotUpgrade";
 export { default as SettingsPanel } from "./SettingsPanel";
 export { default as Shop } from "./Shop";
+export { default as ToastContainer } from "./ToastContainer";
+export { default as AchievementPanel } from "./AchievementPanel";
 export { default as GameBoard } from "./GameBoard";

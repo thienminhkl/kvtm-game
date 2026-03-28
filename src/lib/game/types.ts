@@ -228,10 +228,56 @@ export interface GameStore {
   toggleSandbox: () => void;
 
   // Daily reward
-  lastDailyReward: number | null; // timestamp
+  lastDailyReward: number | null;
   dailyRewardStreak: number;
   canClaimDailyReward: () => boolean;
   claimDailyReward: () => boolean;
+
+  // Notifications
+  notifications: Notification[];
+  addNotification: (msg: string, type?: NotificationType) => void;
+  removeNotification: (id: number) => void;
+
+  // Sell items
+  sellItem: (type: "seed" | "pot" | "fertilizer" | "pest", id: string, qty: number) => boolean;
+
+  // Achievements
+  stats: GameStats;
+  achievements: Achievement[];
+  checkAchievements: () => void;
+}
+
+// --- Notifications ---
+
+export type NotificationType = "success" | "warning" | "info" | "error";
+
+export interface Notification {
+  id: number;
+  message: string;
+  type: NotificationType;
+  timestamp: number;
+}
+
+// --- Achievements ---
+
+export interface GameStats {
+  totalHarvested: number;
+  totalGoldEarned: number;
+  totalPlanted: number;
+  totalPestsKilled: number;
+  totalUpgrades: number;
+  maxLevel: number;
+}
+
+export interface Achievement {
+  id: string;
+  name: string;
+  icon: string;
+  description: string;
+  target: number;
+  current: number;
+  claimed: boolean;
+  reward: { gold: number; ruby: number };
 }
 
 // --- Machines ---

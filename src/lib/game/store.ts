@@ -10,6 +10,7 @@ import type {
   SlotPlant,
   MachineState,
   MachineId,
+  Notification,
   PlantId,
   PotId,
   FertilizerId,
@@ -270,6 +271,30 @@ export const useGameStore = create<GameStore>((set, get) => ({
   lastDailyReward: null,
   dailyRewardStreak: 0,
 
+  // --- Notifications ---
+  notifications: [] as Notification[],
+
+  // --- Stats & Achievements ---
+  stats: {
+    totalHarvested: 0,
+    totalGoldEarned: 0,
+    totalPlanted: 0,
+    totalPestsKilled: 0,
+    totalUpgrades: 0,
+    maxLevel: 1,
+  },
+  achievements: [
+    { id: "harvest_10", name: "Nông Dân", icon: "🌾", description: "Thu hoạch 10 cây", target: 10, current: 0, claimed: false, reward: { gold: 500, ruby: 0 } },
+    { id: "harvest_50", name: "Nông Gia", icon: "🏡", description: "Thu hoạch 50 cây", target: 50, current: 0, claimed: false, reward: { gold: 2000, ruby: 5 } },
+    { id: "harvest_200", name: "Địa Chủ", icon: "👑", description: "Thu hoạch 200 cây", target: 200, current: 0, claimed: false, reward: { gold: 10000, ruby: 20 } },
+    { id: "gold_10k", name: "Giàu Có", icon: "💰", description: "Kiếm 10.000 vàng", target: 10000, current: 0, claimed: false, reward: { gold: 1000, ruby: 0 } },
+    { id: "gold_100k", name: "Triệu Phú", icon: "💎", description: "Kiếm 100.000 vàng", target: 100000, current: 0, claimed: false, reward: { gold: 5000, ruby: 10 } },
+    { id: "pest_20", name: "Diệt Sâu", icon: "🐛", description: "Bắt 20 con sâu", target: 20, current: 0, claimed: false, reward: { gold: 500, ruby: 0 } },
+    { id: "upgrade_3", name: "Thợ Rèn", icon: "🔨", description: "Nâng cấp 3 chậu", target: 3, current: 0, claimed: false, reward: { gold: 1000, ruby: 3 } },
+    { id: "level_5", name: "Nông Gia Lv.5", icon: "⭐", description: "Đạt level 5", target: 5, current: 0, claimed: false, reward: { gold: 2000, ruby: 5 } },
+    { id: "level_10", name: "Bậc Thầy Lv.10", icon: "🌟", description: "Đạt level 10", target: 10, current: 0, claimed: false, reward: { gold: 5000, ruby: 10 } },
+  ] as { id: string; name: string; icon: string; description: string; target: number; current: number; claimed: boolean; reward: { gold: number; ruby: number } }[],
+
   // --- UI Actions ---
   setActiveTool: (tool) => set({ activeTool: tool }),
   setSelectedSeedId: (id) => set({ selectedSeedId: id }),
@@ -314,6 +339,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   harvest: (slotId) => {
+    let harvestGold = 0;
+    let harvestExp = 0;
     set((s) => {
       const slot = findSlot(s.clouds, slotId);
       if (!slot || !slot.plant || !slot.potId) return s;
@@ -321,6 +348,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
       const plant = slot.plant;
       const rewards = calculateRewards(plant.plantId, slot.potId, plant.isFertilized);
+      harvestGold = rewards.gold;
+      harvestExp = rewards.exp;
 
       const newUser = { ...s.user };
       newUser.gold += rewards.gold;
@@ -335,8 +364,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
       return {
         user: newUser,
         clouds: updateSlotInClouds(s.clouds, slotId, { plant: null }),
+        stats: { ...s.stats, totalHarvested: s.stats.totalHarvested + 1, totalGoldEarned: s.stats.totalGoldEarned + rewards.gold },
       };
     });
+    if (harvestGold > 0) {
+      get().addNotification(`Thu hoạch! +${harvestGold}💰 +${harvestExp}⭐`, "success");
+      get().checkAchievements();
+    }
   },
 
   waterPlant: (slotId) => {
@@ -374,8 +408,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
         clouds: updateSlotInClouds(s.clouds, slotId, {
           plant: { ...slot.plant, isPest: false },
         }),
+        stats: { ...s.stats, totalPestsKilled: s.stats.totalPestsKilled + 1 },
       };
     });
+    get().addNotification("Bắt sâu thành công! 🐛", "success");
+    get().checkAchievements();
   },
 
   fertilize: (slotId, fertilizerId) => {
@@ -772,6 +809,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       return { user: newUser, inventory: newInventory };
     });
 
+    get().addNotification(`Mua ${item.name} thành công! ✅`, "success");
     return true;
   },
 
@@ -801,8 +839,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
           [upgrade.pestType]: (s.inventory.pests[upgrade.pestType] ?? 0) - upgrade.pestAmount,
         },
       },
+      stats: { ...s.stats, totalUpgrades: s.stats.totalUpgrades + 1 },
     }));
 
+    get().addNotification(`Nâng cấp thành công! ${POTS[upgrade.to].name}! 🔨`, "success");
+    get().checkAchievements();
     return true;
   },
 
@@ -940,7 +981,108 @@ export const useGameStore = create<GameStore>((set, get) => ({
       };
     });
 
+    get().addNotification(`🎁 Nhận thưởng ngày ${newStreak + 1}/7! +${reward.gold}💰`, "success");
     return true;
+  },
+
+  // --- Notifications ---
+  addNotification: (msg, type = "info") => {
+    set((s) => {
+      const id = Date.now() + Math.random();
+      const notif: Notification = { id, message: msg, type: type as Notification["type"], timestamp: Date.now() };
+      const notifs = [...s.notifications, notif].slice(-5);
+      setTimeout(() => {
+        useGameStore.getState().removeNotification(id);
+      }, 4000);
+      return { notifications: notifs };
+    });
+  },
+
+  removeNotification: (id) => {
+    set((s) => ({
+      notifications: s.notifications.filter(n => n.id !== id),
+    }));
+  },
+
+  // --- Sell Items ---
+  sellItem: (itemType, id, qty) => {
+    const state = get();
+    let have = 0;
+    let sellPrice = 0;
+
+    switch (itemType) {
+      case "seed":
+        have = state.inventory.seeds[id] ?? 0;
+        sellPrice = Math.floor((PLANTS[id as PlantId]?.goldReward ?? 100) * 0.3);
+        break;
+      case "pot":
+        have = state.inventory.pots[id] ?? 0;
+        sellPrice = Math.floor((POTS[id as PotId]?.expBuffPercent ?? 1) * 100);
+        break;
+      case "fertilizer":
+        have = state.inventory.fertilizers[id] ?? 0;
+        sellPrice = Math.floor((FERTILIZERS[id as FertilizerId]?.timeReductionPercent ?? 1) * 20);
+        break;
+      case "pest":
+        have = state.inventory.pests[id as PestType] ?? 0;
+        sellPrice = 10;
+        break;
+    }
+
+    if (have < qty) return false;
+    const totalGold = sellPrice * qty;
+
+    set((s) => {
+      const newInv = { ...s.inventory };
+      const newUser = { ...s.user, gold: s.user.gold + totalGold };
+
+      switch (itemType) {
+        case "seed":
+          newInv.seeds = { ...newInv.seeds, [id]: (newInv.seeds[id] ?? 0) - qty };
+          break;
+        case "pot":
+          newInv.pots = { ...newInv.pots, [id]: (newInv.pots[id] ?? 0) - qty };
+          break;
+        case "fertilizer":
+          newInv.fertilizers = { ...newInv.fertilizers, [id]: (newInv.fertilizers[id] ?? 0) - qty };
+          break;
+        case "pest":
+          newInv.pests = { ...newInv.pests, [id as PestType]: (newInv.pests[id as PestType] ?? 0) - qty };
+          break;
+      }
+
+      return { user: newUser, inventory: newInv };
+    });
+
+    get().addNotification(`Bán ${qty} item được ${totalGold}💰`, "success");
+    return true;
+  },
+
+  // --- Achievements ---
+  checkAchievements: () => {
+    set((s) => {
+      const stats = { ...s.stats };
+      stats.maxLevel = Math.max(stats.maxLevel, s.user.level);
+
+      const newAchievements = s.achievements.map(a => {
+        let current = a.current;
+        switch (a.id) {
+          case "harvest_10": case "harvest_50": case "harvest_200":
+            current = stats.totalHarvested; break;
+          case "gold_10k": case "gold_100k":
+            current = stats.totalGoldEarned; break;
+          case "pest_20":
+            current = stats.totalPestsKilled; break;
+          case "upgrade_3":
+            current = stats.totalUpgrades; break;
+          case "level_5": case "level_10":
+            current = stats.maxLevel; break;
+        }
+        return { ...a, current };
+      });
+
+      return { stats, achievements: newAchievements };
+    });
   },
 }));
 

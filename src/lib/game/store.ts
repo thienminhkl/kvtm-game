@@ -312,6 +312,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
       const timeReduction = 1 - fert.timeReductionPercent / 100;
       const newRemainingTime = Math.max(1, Math.floor(plant.remainingTime * timeReduction));
 
+      // Preserve current progress % so the bar doesn't freeze.
+      // progress = 1 - remainingTime/totalGrowTime => totalGrowTime = newRemaining / (1 - progress)
+      const currentProgress = plant.totalGrowTime > 0
+        ? 1 - plant.remainingTime / plant.totalGrowTime
+        : 0;
+      const denominator = Math.max(0.001, 1 - currentProgress);
+      const newTotalGrowTime = Math.max(newRemainingTime, Math.ceil(newRemainingTime / denominator));
+
       return {
         inventory: {
           ...s.inventory,
@@ -324,7 +332,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
           plant: {
             ...plant,
             remainingTime: newRemainingTime,
-            totalGrowTime: Math.max(newRemainingTime, Math.floor(plant.totalGrowTime * timeReduction)),
+            totalGrowTime: newTotalGrowTime,
             isFertilized: true,
           },
         }),

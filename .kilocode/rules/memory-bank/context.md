@@ -2,98 +2,83 @@
 
 ## Current State
 
-**Project Status**: Phase 1 Complete - Game Data Layer & Zustand Store (Sandbox Mode)
+**Project Status**: Phase 2 Complete - Game UI Components (PotSlot, Toolbar, CloudGrid, Inventory)
 
-The project is a KVTM (Cloud Garden) game remake using Next.js 16 + React 19 + Zustand. Currently in Sandbox mode with all items unlocked (x99).
+The project is a KVTM (Cloud Garden) game remake using Next.js 16 + React 19 + Zustand. Currently in Sandbox mode with all items unlocked (x99). Phase 2 UI is fully functional with interactive pot slots, tool selection, inventory, and monkey AI toggle.
 
 ## Recently Completed
 
 - [x] Base Next.js 16 setup with App Router
 - [x] TypeScript configuration with strict mode
 - [x] Tailwind CSS 4 integration
-- [x] ESLint configuration
-- [x] Memory bank documentation
 - [x] Zustand 5.x installed
-- [x] Game type system (`src/lib/game/types.ts`) - all interfaces and enums
-- [x] Game constants (`src/lib/game/constants.ts`) - plants, pots, fertilizers, tools, level system, config
-- [x] Zustand store (`src/lib/game/store.ts`) - sandbox data, all game actions, growth tick, monkey AI
-- [x] Growth engine (`src/lib/game/engine.ts`) - timer hooks for plant growth and monkey AI
-- [x] Module barrel export (`src/lib/game/index.ts`)
+- [x] Game type system (`src/lib/game/types.ts`)
+- [x] Game constants (`src/lib/game/constants.ts`)
+- [x] Zustand store (`src/lib/game/store.ts`) - sandbox data, all actions, growth tick, monkey AI
+- [x] Growth engine (`src/lib/game/engine.ts`)
+- [x] Phase 2 UI Components:
+  - [x] `PotSlot` - Interactive slot with growth stages, progress bar, pest/thirsty alerts
+  - [x] `Toolbar` - 7 tool selection (plant, water, pest, fertilize, harvest, pick/place pot)
+  - [x] `CloudGrid` - 3x3 grid of PotSlots for active cloud layer
+  - [x] `CloudNavigator` - Up/down cloud layer navigation (8 layers)
+  - [x] `UserBar` - Level, EXP bar, gold, ruby display
+  - [x] `InventoryPanel` - Tabbed inventory (seeds, pots, fertilizers, pests) with selection
+  - [x] `MonkeyToggle` - Monkey AI on/off + auto-plant seed selector
+  - [x] `GameBoard` - Main orchestrator, starts growth engine, layouts all components
 
 ## Current Structure
 
 | File/Directory | Purpose | Status |
 |----------------|---------|--------|
-| `src/lib/game/types.ts` | Type definitions (Plant, Pot, Slot, Cloud, Inventory, User, GameStore) | ✅ Complete |
-| `src/lib/game/constants.ts` | Game data catalogs (8 plants, 5 pots, 3 fertilizers, 7 tools, config values) | ✅ Complete |
-| `src/lib/game/store.ts` | Zustand store with sandbox data (x99), all actions, tick engine, monkey FSM | ✅ Complete |
-| `src/lib/game/engine.ts` | React hook for setInterval-based growth engine (1s tick) and monkey AI | ✅ Complete |
-| `src/lib/game/index.ts` | Barrel export for game module | ✅ Complete |
+| `src/lib/game/types.ts` | Type definitions | ✅ |
+| `src/lib/game/constants.ts` | Game data catalogs | ✅ |
+| `src/lib/game/store.ts` | Zustand store + actions | ✅ |
+| `src/lib/game/engine.ts` | Growth engine hooks | ✅ |
+| `src/lib/game/index.ts` | Barrel export | ✅ |
+| `src/components/game/PotSlot.tsx` | Single slot UI | ✅ |
+| `src/components/game/Toolbar.tsx` | Tool selection bar | ✅ |
+| `src/components/game/CloudGrid.tsx` | 3x3 cloud layer grid | ✅ |
+| `src/components/game/CloudNavigator.tsx` | Cloud layer up/down | ✅ |
+| `src/components/game/UserBar.tsx` | Player stats display | ✅ |
+| `src/components/game/InventoryPanel.tsx` | Tabbed inventory | ✅ |
+| `src/components/game/MonkeyToggle.tsx` | Monkey AI controls | ✅ |
+| `src/components/game/GameBoard.tsx` | Main game orchestrator | ✅ |
+| `src/app/page.tsx` | Game page | ✅ |
+| `src/app/layout.tsx` | Root layout (KVTM metadata) | ✅ |
 
-## Game Data Summary
+## How to Play (Current UI)
 
-### Plants (8 types)
-| Plant | Grow Time | Pest | EXP | Gold | Unlock Level |
-|-------|-----------|------|-----|------|-------------|
-| Linh Lan | 5min | beetle | 10 | 100 | 1 |
-| Hoa Cúc | 15min | beetle | 25 | 250 | 1 |
-| Hoa Hồng | 30min | beetle | 50 | 600 | 3 |
-| Hồng Trắng | 1hr | caterpillar | 120 | 1500 | 5 |
-| Hoa Tulip | 2hr | caterpillar | 300 | 4000 | 8 |
-| Hoa Hướng Dương | 4hr | snail | 600 | 8000 | 12 |
-| Cây Táo | 8hr | snail | 1200 | 15000 | 15 |
-| Cây Dâu | 12hr | dragonfly | 2000 | 25000 | 20 |
-
-### Pots (5 tiers)
-| Pot | EXP/Gold Buff | Time Reduction | Upgrade Cost |
-|-----|--------------|----------------|-------------|
-| Đất | 0% | 0% | - |
-| Đồng | +5% | -5% | 1000g + 5 beetle |
-| Bạc | +15% | -10% | 5000g + 10 caterpillar |
-| Vàng | +30% | -20% | 20000g + 20 snail |
-| Kim Cương | +60% | -40% | 100000g + 50 dragonfly |
-
-### Store Actions Implemented
-- `plantSeed(slotId, plantId)` - Plant seed in pot
-- `harvest(slotId)` - Harvest mature plant (gold + exp)
-- `waterPlant(slotId)` - Water thirsty plant
-- `removePest(slotId)` - Remove pest, catch into inventory
-- `fertilize(slotId, fertilizerId)` - Apply fertilizer (time reduction + buff)
-- `pickPot(slotId)` - Pick up pot from slot
-- `placePot(slotId, potId)` - Place pot into empty slot
-- `tick()` - Growth engine tick (1s interval)
-- `monkeyTick()` - Monkey AI FSM scan
-- `toggleMonkey()` / `setMonkeyAutoPlant(seedId)` - Monkey control
+1. **Select a tool** from the left sidebar (e.g. 🌱 Trồng)
+2. **Select a seed** from the right inventory panel (Hạt tab)
+3. **Click an empty pot** in the cloud grid to plant
+4. **Watch the plant grow** - progress bar + countdown timer
+5. **Handle events**: Click 💧 tool then thirsty plant, 🪲 tool then pest plant
+6. **Harvest**: Select 🌾 tool, click mature plant (green ring)
+7. **Navigate clouds**: Use ▲▼ buttons to switch layers
+8. **Monkey AI**: Toggle ON, select auto-plant seed, monkey scans slots automatically
 
 ## Pending (Next Phases)
 
-### Phase 2: PotSlot Component
-- [ ] Visual pot slot component (empty/plant states)
-- [ ] Plant growth stage rendering (25%/50%/75%/100%)
-- [ ] Countdown timer display
+### Phase 3: Cloud View & Visual Polish
+- [ ] Cloud layer visual styling (white puffy clouds)
+- [ ] Beanstalk/vine between layers
+- [ ] Animated plant growth transitions
+- [ ] Bird AI visual (fly to pest, remove, fly away)
+- [ ] Monkey walking animation across slots
 
-### Phase 3: Toolbar & Tool System
-- [ ] Toolbar UI with tool selection
-- [ ] Tool cursor/interaction feedback
-- [ ] Seed selection panel
+### Phase 4: Jack's House & Ground View
+- [ ] Ground view with Jack character
+- [ ] Production machines (juicer, oven, dryer)
+- [ ] Machine crafting UI
 
-### Phase 4: Monkey & Bird AI
-- [ ] Monkey sprite animation
-- [ ] Bird AI for pest removal
-- [ ] Visual feedback for AI actions
-
-### Phase 5: Cloud View & Jack's House
-- [ ] Cloud layer navigation
-- [ ] Scroll between layers
-- [ ] Jack's house ground view
-
-### Phase 6: Production Mode
-- [ ] Inventory/shop system
+### Phase 5: Production Mode
 - [ ] Locked items by level
-- [ ] Real-time progression
+- [ ] Shop system (buy seeds, pots, tools)
+- [ ] Real-time progression (no x99 sandbox)
 
 ## Session History
 
 | Date | Changes |
 |------|---------|
-| 2026-03-28 | Phase 1: Installed Zustand, created game types, constants, store (sandbox x99), growth engine |
+| 2026-03-28 | Phase 1: Zustand store, types, constants, engine |
+| 2026-03-28 | Phase 2: Full UI - PotSlot, Toolbar, CloudGrid, Inventory, UserBar, MonkeyToggle, GameBoard |

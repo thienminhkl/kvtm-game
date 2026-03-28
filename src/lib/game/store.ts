@@ -181,7 +181,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     bananasRemaining: 99,
     autoPlantSeedId: null,
     currentSlotIndex: 0,
-    isActiveScanning: false,
+    isActing: false,
   },
 
   // --- UI State ---
@@ -388,8 +388,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
           if (!slot.plant) return slot;
           const plant = slot.plant;
 
-          // Paused if pest or thirsty
-          if (plant.isPest || plant.isThirsty) return slot;
+          // Paused only if thirsty (need water once after planting)
+          if (plant.isThirsty) return slot;
 
           changed = true;
           let newRemaining = plant.remainingTime - 1;
@@ -399,7 +399,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
           let hasPest: boolean = plant.isPest;
           if (!hasPest && newRemaining > 0 && Math.random() < PEST_SPAWN_CHANCE) {
             hasPest = true;
-            changed = true;
+          }
+
+          // Pest auto-clears when plant matures
+          if (hasPest && newRemaining <= 0) {
+            hasPest = false;
           }
 
           return {
@@ -424,6 +428,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       monkey: {
         ...s.monkey,
         isActive: !s.monkey.isActive,
+        isActing: false,
         bananasRemaining: s.monkey.isActive
           ? s.monkey.bananasRemaining
           : s.monkey.bananasRemaining > 0
@@ -442,38 +447,84 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const { monkey } = state;
     if (!monkey.isActive || monkey.bananasRemaining <= 0) return;
 
+    // If currently performing an action, wait
+    if (monkey.isActing) return;
+
     const cloud = state.clouds[state.activeCloudIndex];
     if (!cloud) return;
 
     const slotIndex = monkey.currentSlotIndex;
     const slot = cloud.slots[slotIndex];
-
-    // FSM: scan current slot
-    if (slot) {
-      // Priority 1: Remove pest
-      if (slot.plant?.isPest && state.inventory.tools.insectNet > 0) {
-        get().removePest(slot.id);
-      }
-      // Priority 2: Harvest ready plant
-      else if (slot.plant && slot.plant.remainingTime <= 0) {
-        get().harvest(slot.id);
-      }
-      // Priority 3: Auto-plant in empty pot
-      else if (
-        !slot.plant &&
-        slot.potId &&
-        monkey.autoPlantSeedId &&
-        (state.inventory.seeds[monkey.autoPlantSeedId] ?? 0) > 0
-      ) {
-        get().plantSeed(slot.id, monkey.autoPlantSeedId);
-      }
+    if (!slot) {
+      // Move to next slot
+      set((s) => ({
+        monkey: { ...s.monkey, currentSlotIndex: (s.monkey.currentSlotIndex + 1) % SLOTS_PER_LAYER },
+      }));
+      return;
     }
 
-    // Move to next slot
-    const nextIndex = (slotIndex + 1) % SLOTS_PER_LAYER;
-    set((s) => ({
-      monkey: { ...s.monkey, currentSlotIndex: nextIndex },
-    }));
+    // Scan and decide on action
+    let action: "removePest" | "harvest" | "water" | "plant" | "fertilize" | null = null;
+
+    if (slot.plant?.isPest && state.inventory.tools.insectNet > 0) {
+      action = "removePest";
+    } else if (slot.plant && slot.plant.remainingTime <= 0) {
+      action = "harvest";
+    } else if (slot.plant?.isThirsty && state.inventory.tools.waterCan > 0) {
+      action = "water";
+    } else if (
+      !slot.plant && slot.potId && monkey.autoPlantSeedId &&
+      (state.inventory.seeds[monkey.autoPlantSeedId] ?? 0) > 0
+    ) {
+      action = "plant";
+    } else if (slot.plant && !slot.plant.isFertilized) {
+      const hasFert = Object.values(state.inventory.fertilizers).some(q => q > 0);
+      if (hasFert) action = "fertilize";
+    }
+
+    if (action) {
+      // Mark as acting (0.2s delay)
+      set((s) => ({ monkey: { ...s.monkey, isActing: true } }));
+
+      // Execute action after a micro-delay to let UI update
+      queueMicrotask(() => {
+        const currentState = get();
+        switch (action) {
+          case "removePest":
+            get().removePest(slot.id);
+            break;
+          case "harvest":
+            get().harvest(slot.id);
+            break;
+          case "water":
+            get().waterPlant(slot.id);
+            break;
+          case "plant":
+            if (monkey.autoPlantSeedId) get().plantSeed(slot.id, monkey.autoPlantSeedId);
+            break;
+          case "fertilize": {
+            const fertId = (Object.keys(currentState.inventory.fertilizers) as FertilizerId[])
+              .find(id => (currentState.inventory.fertilizers[id] ?? 0) > 0);
+            if (fertId) get().fertilize(slot.id, fertId);
+            break;
+          }
+        }
+
+        // After action, move to next slot
+        set((s) => ({
+          monkey: {
+            ...s.monkey,
+            isActing: false,
+            currentSlotIndex: (s.monkey.currentSlotIndex + 1) % SLOTS_PER_LAYER,
+          },
+        }));
+      });
+    } else {
+      // No action needed, move to next slot immediately
+      set((s) => ({
+        monkey: { ...s.monkey, currentSlotIndex: (s.monkey.currentSlotIndex + 1) % SLOTS_PER_LAYER },
+      }));
+    }
   },
 
   // --- Utility ---

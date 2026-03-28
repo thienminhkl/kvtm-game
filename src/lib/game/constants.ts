@@ -251,4 +251,4 @@ export const THIRSTY_CHANCE = 0.003;
 export const THIRSTY_TIMEOUT_SECONDS = 120;
 
 // --- Monkey AI Config ---
-export const MONKEY_SCAN_INTERVAL_MS = 2000;
+export const MONKEY_ACTION_INTERVAL_MS = 200; // 0.2s per action

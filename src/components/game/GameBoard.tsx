@@ -5,7 +5,6 @@ import UserBar from "./UserBar";
 import Toolbar from "./Toolbar";
 import CloudGrid from "./CloudGrid";
 import CloudNavigator from "./CloudNavigator";
-import MonkeyToggle from "./MonkeyToggle";
 
 export default function GameBoard() {
   useGameEngine();
@@ -21,10 +20,9 @@ export default function GameBoard() {
       <div className="flex-1 flex flex-col items-center justify-center gap-3 px-3 pb-2 overflow-hidden">
         <CloudNavigator />
         <CloudGrid />
-        <MonkeyToggle />
       </div>
 
-      {/* Bottom: Toolbar with integrated inventory */}
+      {/* Bottom: Toolbar */}
       <div className="sticky bottom-0 p-2 flex justify-center">
         <Toolbar />
       </div>

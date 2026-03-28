@@ -144,9 +144,9 @@ export interface User {
 export interface MonkeyAI {
   isActive: boolean;
   bananasRemaining: number;
-  autoPlantSeedId: PlantId | null; // which seed to auto-plant (set by player)
-  currentSlotIndex: number; // FSM state: which slot monkey is scanning
-  isActiveScanning: boolean;
+  autoPlantSeedId: PlantId | null;
+  currentSlotIndex: number;
+  isActing: boolean; // true while performing an action (0.2s delay)
 }
 
 // --- Active Tool ---

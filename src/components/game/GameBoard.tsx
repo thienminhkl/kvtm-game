@@ -5,6 +5,7 @@ import UserBar from "./UserBar";
 import Toolbar from "./Toolbar";
 import CloudGrid from "./CloudGrid";
 import CloudNavigator from "./CloudNavigator";
+import Beanstalk from "./Beanstalk";
 import GroundView from "./GroundView";
 
 export default function GameBoard() {
@@ -33,19 +34,29 @@ export default function GameBoard() {
         </button>
       </div>
 
-      {/* Center: Cloud or Ground view */}
-      <div className="flex-1 flex flex-col items-center justify-center gap-3 px-3 pb-2 overflow-hidden">
+      {/* Center: 3-column layout */}
+      <div className="flex-1 flex items-center justify-center gap-3 px-3 pb-2 overflow-hidden">
         {isCloud ? (
           <>
-            <CloudNavigator />
+            {/* Left: Beanstalk */}
+            <div className="flex-shrink-0 h-[200px]">
+              <Beanstalk />
+            </div>
+
+            {/* Center: Cloud grid */}
             <CloudGrid />
+
+            {/* Right: Navigation buttons */}
+            <div className="flex-shrink-0">
+              <CloudNavigator />
+            </div>
           </>
         ) : (
           <GroundView />
         )}
       </div>
 
-      {/* Bottom: Toolbar (only show in cloud view) */}
+      {/* Bottom: Toolbar */}
       {isCloud && (
         <div className="sticky bottom-0 p-2 flex justify-center">
           <Toolbar />

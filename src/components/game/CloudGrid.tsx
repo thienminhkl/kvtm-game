@@ -1,6 +1,6 @@
 "use client";
 
-import { useGameStore, SLOTS_PER_LAYER } from "@/lib/game";
+import { useGameStore } from "@/lib/game";
 import PotSlot from "./PotSlot";
 import BirdAI from "./BirdAI";
 
@@ -12,14 +12,7 @@ export default function CloudGrid() {
   if (!cloud) return null;
 
   return (
-    <div className="flex flex-col items-center gap-2 w-full max-w-[700px]">
-      {/* Cloud layer label */}
-      <div className="flex items-center gap-2 text-sm text-neutral-300 font-medium">
-        <span className="text-white/20 text-lg">☁️</span>
-        <span>Tầng Mây {activeCloudIndex + 1}</span>
-        <span className="text-white/20 text-lg">☁️</span>
-      </div>
-
+    <div className="relative w-full max-w-[620px]">
       {/* Cloud grid with cloud-styled background */}
       <div className="relative p-3 rounded-2xl bg-gradient-to-b from-white/10 via-white/5 to-transparent border border-white/10 animate-cloud-float">
         {/* Decorative cloud puffs */}
@@ -32,15 +25,11 @@ export default function CloudGrid() {
           {cloud.slots.map((slot, index) => (
             <div key={slot.id} className="relative">
               <PotSlot slot={slot} />
-              {/* Monkey scan indicator */}
               {monkey.isActive && monkey.currentSlotIndex === index && !monkey.isActing && (
                 <div className="absolute inset-0 rounded-lg border-2 border-green-400/60 animate-scan-pulse pointer-events-none" />
               )}
-              {/* Monkey acting indicator */}
               {monkey.isActive && monkey.currentSlotIndex === index && monkey.isActing && (
-                <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-sm pointer-events-none">
-                  🐒
-                </div>
+                <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-sm pointer-events-none">🐒</div>
               )}
             </div>
           ))}
@@ -48,6 +37,14 @@ export default function CloudGrid() {
 
         {/* Bird AI overlay */}
         <BirdAI />
+      </div>
+
+      {/* Layer number - bottom right corner */}
+      <div className="absolute -bottom-1 -right-2 flex items-center gap-0.5">
+        <span className="text-[10px] text-neutral-500">Tầng</span>
+        <span className="text-lg font-bold text-white/80 leading-none">
+          {activeCloudIndex + 1}
+        </span>
       </div>
     </div>
   );

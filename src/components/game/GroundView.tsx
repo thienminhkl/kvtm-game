@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useGameStore, MACHINES, MACHINE_IDS } from "@/lib/game";
 import type { MachineId } from "@/lib/game";
 import MachineUI from "./MachineUI";
+import Shop from "./Shop";
 
 function MachineCard({ id, isSelected, onSelect }: {
   id: MachineId;
@@ -50,6 +51,7 @@ function MachineCard({ id, isSelected, onSelect }: {
 
 export default function GroundView() {
   const [selectedMachine, setSelectedMachine] = useState<MachineId | null>(null);
+  const [showShop, setShowShop] = useState(false);
 
   return (
     <div className="flex flex-col items-center gap-4 w-full max-w-[700px]">
@@ -71,14 +73,35 @@ export default function GroundView() {
           </div>
         </div>
 
-        {/* Machines */}
-        <div className="grid grid-cols-3 gap-3">
+        {/* Machines + Shop */}
+        <div className="grid grid-cols-4 gap-3">
+          {/* Shop button */}
+          <button
+            onClick={() => {
+              setShowShop(!showShop);
+              setSelectedMachine(null);
+            }}
+            className={`
+              flex flex-col items-center gap-1 p-3 rounded-xl border-2 transition-all duration-200
+              ${showShop
+                ? "border-yellow-400 bg-yellow-900/30 scale-105"
+                : "border-neutral-600 bg-neutral-800/50 hover:border-yellow-500/50 hover:bg-neutral-700/50"
+              }
+            `}
+          >
+            <span className="text-3xl">🏪</span>
+            <span className="text-[10px] text-neutral-300 font-medium">Cửa Hàng</span>
+          </button>
+
           {MACHINE_IDS.map((id) => (
             <MachineCard
               key={id}
               id={id}
               isSelected={selectedMachine === id}
-              onSelect={() => setSelectedMachine(selectedMachine === id ? null : id)}
+              onSelect={() => {
+                setSelectedMachine(selectedMachine === id ? null : id);
+                setShowShop(false);
+              }}
             />
           ))}
         </div>
@@ -90,6 +113,11 @@ export default function GroundView() {
           machineId={selectedMachine}
           onClose={() => setSelectedMachine(null)}
         />
+      )}
+
+      {/* Shop panel */}
+      {showShop && (
+        <Shop onClose={() => setShowShop(false)} />
       )}
     </div>
   );

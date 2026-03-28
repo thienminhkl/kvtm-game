@@ -22,6 +22,7 @@ import {
   POTS,
   FERTILIZERS,
   MACHINES,
+  SHOP_ITEM_MAP,
   CLOUD_LAYER_COUNT,
   SLOTS_PER_LAYER,
   PEST_SPAWN_CHANCE,
@@ -171,18 +172,71 @@ function createSandboxInventory() {
   };
 }
 
+// --- Production Mode Initial Data ---
+
+function createProductionUser() {
+  return {
+    level: 1,
+    exp: 0,
+    expToNextLevel: getExpForLevel(1),
+    gold: 500,
+    ruby: 0,
+  };
+}
+
+function createProductionInventory() {
+  return {
+    seeds: {
+      linh_lan: 5,
+      hoa_cuc: 3,
+      hoa_hong: 0,
+      hong_trang: 0,
+      hoa_tulip: 0,
+      hoa_huong_duong: 0,
+      cay_tao: 0,
+      cay_dau: 0,
+    },
+    pots: {
+      pot_soil: 3,
+      pot_bronze: 0,
+      pot_silver: 0,
+      pot_gold: 0,
+      pot_diamond: 0,
+    },
+    tools: {
+      waterCan: 10,
+      insectNet: 10,
+      harvestBasket: 0,
+      banana: 0,
+    },
+    fertilizers: {
+      fertilizer_basic: 2,
+      fertilizer_advanced: 0,
+      fertilizer_premium: 0,
+    },
+    pests: {
+      beetle: 0,
+      caterpillar: 0,
+      snail: 0,
+      dragonfly: 0,
+    },
+  };
+}
+
+const IS_SANDBOX = true; // Toggle this for production mode
+
 // ============================================================
 // Store
 // ============================================================
 
 export const useGameStore = create<GameStore>((set, get) => ({
-  // --- Initial Data (Sandbox Mode) ---
-  user: createSandboxUser(),
-  inventory: createSandboxInventory(),
+  // --- Initial Data ---
+  user: IS_SANDBOX ? createSandboxUser() : createProductionUser(),
+  inventory: IS_SANDBOX ? createSandboxInventory() : createProductionInventory(),
   clouds: createInitialClouds(),
   monkey: {
     isActive: false,
-    bananasRemaining: 99,
+    bananasRemaining: IS_SANDBOX ? 99 : 0,
     autoPlantSeedId: null,
     currentSlotIndex: 0,
     isActing: false,
@@ -649,6 +703,66 @@ export const useGameStore = create<GameStore>((set, get) => ({
       if (!changed) return s;
       return { machines: newMachines };
     });
+  },
+
+  // --- Shop ---
+  buyItem: (shopItemId) => {
+    const item = SHOP_ITEM_MAP[shopItemId];
+    if (!item) return false;
+
+    const state = get();
+    if (state.user.level < item.unlockLevel) return false;
+
+    // Check currency
+    if (item.currency === "gold") {
+      if (state.user.gold < item.price) return false;
+    } else {
+      if (state.user.ruby < item.price) return false;
+    }
+
+    set((s) => {
+      const newInventory = { ...s.inventory };
+      const newUser = { ...s.user };
+
+      // Deduct currency
+      if (item.currency === "gold") {
+        newUser.gold -= item.price;
+      } else {
+        newUser.ruby -= item.price;
+      }
+
+      // Add item to inventory
+      switch (item.target.type) {
+        case "seed":
+          newInventory.seeds = {
+            ...newInventory.seeds,
+            [item.target.id]: (newInventory.seeds[item.target.id] ?? 0) + item.quantity,
+          };
+          break;
+        case "pot":
+          newInventory.pots = {
+            ...newInventory.pots,
+            [item.target.id]: (newInventory.pots[item.target.id] ?? 0) + item.quantity,
+          };
+          break;
+        case "fertilizer":
+          newInventory.fertilizers = {
+            ...newInventory.fertilizers,
+            [item.target.id]: (newInventory.fertilizers[item.target.id] ?? 0) + item.quantity,
+          };
+          break;
+        case "tool":
+          newInventory.tools = {
+            ...newInventory.tools,
+            [item.target.id]: (newInventory.tools[item.target.id as keyof typeof newInventory.tools] ?? 0) + item.quantity,
+          };
+          break;
+      }
+
+      return { user: newUser, inventory: newInventory };
+    });
+
+    return true;
   },
 }));
 

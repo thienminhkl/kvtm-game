@@ -8,6 +8,7 @@ import type {
   FertilizerDefinition,
   ToolDefinition,
   MachineDefinition,
+  ShopItem,
   PlantId,
   PotId,
   FertilizerId,
@@ -338,3 +339,38 @@ export const MACHINES: Record<MachineId, MachineDefinition> = {
 };
 
 export const MACHINE_IDS: MachineId[] = ["juicer", "oven", "dryer"];
+
+// --- Shop ---
+
+export const SHOP_ITEMS: ShopItem[] = [
+  // Seeds
+  { id: "buy_linh_lan", name: "Hạt Linh Lan", icon: "🌱", category: "seeds", price: 50, currency: "gold", quantity: 5, unlockLevel: 1, target: { type: "seed", id: "linh_lan" } },
+  { id: "buy_hoa_cuc", name: "Hạt Hoa Cúc", icon: "🌱", category: "seeds", price: 120, currency: "gold", quantity: 5, unlockLevel: 1, target: { type: "seed", id: "hoa_cuc" } },
+  { id: "buy_hoa_hong", name: "Hạt Hoa Hồng", icon: "🌱", category: "seeds", price: 300, currency: "gold", quantity: 3, unlockLevel: 3, target: { type: "seed", id: "hoa_hong" } },
+  { id: "buy_hong_trang", name: "Hạt Hồng Trắng", icon: "🌱", category: "seeds", price: 800, currency: "gold", quantity: 3, unlockLevel: 5, target: { type: "seed", id: "hong_trang" } },
+  { id: "buy_hoa_tulip", name: "Hạt Hoa Tulip", icon: "🌱", category: "seeds", price: 2000, currency: "gold", quantity: 2, unlockLevel: 8, target: { type: "seed", id: "hoa_tulip" } },
+  { id: "buy_hoa_huong_duong", name: "Hạt Hướng Dương", icon: "🌱", category: "seeds", price: 5000, currency: "gold", quantity: 2, unlockLevel: 12, target: { type: "seed", id: "hoa_huong_duong" } },
+  { id: "buy_cay_tao", name: "Hạt Cây Táo", icon: "🌱", category: "seeds", price: 10000, currency: "gold", quantity: 1, unlockLevel: 15, target: { type: "seed", id: "cay_tao" } },
+  { id: "buy_cay_dau", name: "Hạt Cây Dâu", icon: "🌱", category: "seeds", price: 20000, currency: "gold", quantity: 1, unlockLevel: 20, target: { type: "seed", id: "cay_dau" } },
+
+  // Pots
+  { id: "buy_pot_soil", name: "Chậu Đất", icon: "🏺", category: "pots", price: 100, currency: "gold", quantity: 1, unlockLevel: 1, target: { type: "pot", id: "pot_soil" } },
+  { id: "buy_pot_bronze", name: "Chậu Đồng", icon: "🏺", category: "pots", price: 1500, currency: "gold", quantity: 1, unlockLevel: 3, target: { type: "pot", id: "pot_bronze" } },
+  { id: "buy_pot_silver", name: "Chậu Bạc", icon: "🏺", category: "pots", price: 8000, currency: "gold", quantity: 1, unlockLevel: 6, target: { type: "pot", id: "pot_silver" } },
+  { id: "buy_pot_gold", name: "Chậu Vàng", icon: "🏺", category: "pots", price: 30000, currency: "gold", quantity: 1, unlockLevel: 10, target: { type: "pot", id: "pot_gold" } },
+  { id: "buy_pot_diamond", name: "Chậu Kim Cương", icon: "🏺", category: "pots", price: 150000, currency: "gold", quantity: 1, unlockLevel: 15, target: { type: "pot", id: "pot_diamond" } },
+
+  // Fertilizers
+  { id: "buy_fert_basic", name: "Phân Thường", icon: "🧪", category: "fertilizers", price: 200, currency: "gold", quantity: 3, unlockLevel: 1, target: { type: "fertilizer", id: "fertilizer_basic" } },
+  { id: "buy_fert_advanced", name: "Phân Cao Cấp", icon: "🧪", category: "fertilizers", price: 1000, currency: "gold", quantity: 2, unlockLevel: 5, target: { type: "fertilizer", id: "fertilizer_advanced" } },
+  { id: "buy_fert_premium", name: "Phân Đặc Biệt", icon: "🧪", category: "fertilizers", price: 5000, currency: "gold", quantity: 1, unlockLevel: 10, target: { type: "fertilizer", id: "fertilizer_premium" } },
+
+  // Tools
+  { id: "buy_water", name: "Nước Tưới (x10)", icon: "💧", category: "tools", price: 100, currency: "gold", quantity: 10, unlockLevel: 1, target: { type: "tool", id: "waterCan" } },
+  { id: "buy_net", name: "Vợt Bắt Sâu (x10)", icon: "🐛", category: "tools", price: 150, currency: "gold", quantity: 10, unlockLevel: 1, target: { type: "tool", id: "insectNet" } },
+  { id: "buy_banana", name: "Chuối (x5)", icon: "🍌", category: "tools", price: 500, currency: "gold", quantity: 5, unlockLevel: 1, target: { type: "tool", id: "banana" } },
+];
+
+export const SHOP_ITEM_MAP: Record<string, ShopItem> = Object.fromEntries(
+  SHOP_ITEMS.map(item => [item.id, item])
+);

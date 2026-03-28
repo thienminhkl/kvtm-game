@@ -9,4 +9,5 @@ export { default as InventoryPanel } from "./InventoryPanel";
 export { default as BirdAI } from "./BirdAI";
 export { default as GroundView } from "./GroundView";
 export { default as MachineUI } from "./MachineUI";
+export { default as Shop } from "./Shop";
 export { default as GameBoard } from "./GameBoard";

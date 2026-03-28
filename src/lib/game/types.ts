@@ -211,6 +211,9 @@ export interface GameStore {
   startCraft: (machineId: MachineId, recipeIndex: number) => void;
   collectProduct: (machineId: MachineId) => void;
   machineTick: () => void;
+
+  // Shop
+  buyItem: (shopItemId: string) => boolean;
 }
 
 // --- Machines ---
@@ -238,7 +241,27 @@ export interface MachineDefinition {
 
 export interface MachineState {
   id: MachineId;
-  craftingRecipeIndex: number | null; // null = idle
-  craftingRemainingTime: number; // seconds left
-  hasProduct: boolean; // ready to collect
+  craftingRecipeIndex: number | null;
+  craftingRemainingTime: number;
+  hasProduct: boolean;
+}
+
+// --- Shop ---
+
+export type ShopCategory = "seeds" | "pots" | "fertilizers" | "tools";
+
+export interface ShopItem {
+  id: string;
+  name: string;
+  icon: string;
+  category: ShopCategory;
+  price: number;
+  currency: "gold" | "ruby";
+  quantity: number; // how many you get per purchase
+  unlockLevel: number;
+  // What this item maps to in inventory
+  target: {
+    type: "seed" | "pot" | "fertilizer" | "tool";
+    id: string;
+  };
 }

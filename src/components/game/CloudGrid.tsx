@@ -9,12 +9,20 @@ export default function CloudGrid() {
 
   if (!cloud) return null;
 
+  const isGroundLevel = activeCloudIndex === 0;
+
   return (
     <div className="flex flex-col items-center gap-2">
       <div className="text-sm text-neutral-400 font-medium">
         ☁️ Tầng Mây {activeCloudIndex + 1}
       </div>
-      <div className="grid grid-cols-3 gap-2 w-full max-w-[340px]">
+      <div
+        className={
+          isGroundLevel
+            ? "grid grid-cols-9 gap-1.5 w-full max-w-[700px]"
+            : "grid grid-cols-3 gap-2 w-full max-w-[340px]"
+        }
+      >
         {cloud.slots.map((slot) => (
           <PotSlot key={slot.id} slot={slot} />
         ))}

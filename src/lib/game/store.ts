@@ -21,8 +21,6 @@ import {
   CLOUD_LAYER_COUNT,
   SLOTS_PER_LAYER,
   PEST_SPAWN_CHANCE,
-  THIRSTY_CHANCE,
-  THIRSTY_TIMEOUT_SECONDS,
   getExpForLevel,
 } from "./constants";
 
@@ -218,7 +216,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         totalGrowTime,
         remainingTime: totalGrowTime,
         isPest: false,
-        isThirsty: false,
+        isThirsty: true,
         isFertilized: false,
         plantedAt: now,
       };
@@ -404,26 +402,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
             changed = true;
           }
 
-          // Random thirsty
-          let hasThirsty: boolean = plant.isThirsty;
-          const timeElapsed = plant.totalGrowTime - newRemaining;
-          if (
-            !hasThirsty &&
-            newRemaining > 0 &&
-            (timeElapsed > THIRSTY_TIMEOUT_SECONDS ||
-              Math.random() < THIRSTY_CHANCE)
-          ) {
-            hasThirsty = true;
-            changed = true;
-          }
-
           return {
             ...slot,
             plant: {
               ...plant,
               remainingTime: newRemaining,
               isPest: hasPest,
-              isThirsty: hasThirsty,
             },
           };
         }),

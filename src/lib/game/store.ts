@@ -203,67 +203,52 @@ export const useGameStore = create<GameStore>((set, get) => ({
   // --- Game Actions ---
 
   plantSeed: (slotId, plantId) => {
-    const state = get();
-    const { inventory } = state;
+    set((s) => {
+      if ((s.inventory.seeds[plantId] ?? 0) <= 0) return s;
 
-    // Check seed inventory
-    if ((inventory.seeds[plantId] ?? 0) <= 0) return;
+      const slot = findSlot(s.clouds, slotId);
+      if (!slot || !slot.potId || slot.plant) return s;
 
-    // Find the slot
-    const slot = findSlot(state.clouds, slotId);
-    if (!slot) return;
+      const potId = slot.potId;
+      const totalGrowTime = calculateAdjustedGrowTime(plantId, potId, false);
+      const now = Date.now();
 
-    // Must have a pot and no plant
-    if (!slot.potId || slot.plant) return;
+      const newPlant: SlotPlant = {
+        plantId,
+        totalGrowTime,
+        remainingTime: totalGrowTime,
+        isPest: false,
+        isThirsty: false,
+        isFertilized: false,
+        plantedAt: now,
+      };
 
-    const potId = slot.potId;
-    const totalGrowTime = calculateAdjustedGrowTime(plantId, potId, false);
-    const now = Date.now();
-
-    const newPlant: SlotPlant = {
-      plantId,
-      totalGrowTime,
-      remainingTime: totalGrowTime,
-      isPest: false,
-      isThirsty: false,
-      isFertilized: false,
-      plantedAt: now,
-    };
-
-    set((s) => ({
-      inventory: {
-        ...s.inventory,
-        seeds: {
-          ...s.inventory.seeds,
-          [plantId]: (s.inventory.seeds[plantId] ?? 0) - 1,
+      return {
+        inventory: {
+          ...s.inventory,
+          seeds: {
+            ...s.inventory.seeds,
+            [plantId]: (s.inventory.seeds[plantId] ?? 0) - 1,
+          },
         },
-      },
-      clouds: updateSlotInClouds(s.clouds, slotId, {
-        plant: newPlant,
-      }),
-    }));
+        clouds: updateSlotInClouds(s.clouds, slotId, { plant: newPlant }),
+      };
+    });
   },
 
   harvest: (slotId) => {
-    const state = get();
-    const slot = findSlot(state.clouds, slotId);
-    if (!slot || !slot.plant || !slot.potId) return;
-
-    const plant = slot.plant;
-    if (plant.remainingTime > 0) return; // not ready
-
-    const rewards = calculateRewards(
-      plant.plantId,
-      slot.potId,
-      plant.isFertilized
-    );
-
     set((s) => {
+      const slot = findSlot(s.clouds, slotId);
+      if (!slot || !slot.plant || !slot.potId) return s;
+      if (slot.plant.remainingTime > 0) return s;
+
+      const plant = slot.plant;
+      const rewards = calculateRewards(plant.plantId, slot.potId, plant.isFertilized);
+
       const newUser = { ...s.user };
       newUser.gold += rewards.gold;
       newUser.exp += rewards.exp;
 
-      // Level up check
       while (newUser.exp >= newUser.expToNextLevel) {
         newUser.exp -= newUser.expToNextLevel;
         newUser.level += 1;
@@ -278,127 +263,113 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   waterPlant: (slotId) => {
-    const state = get();
-    const slot = findSlot(state.clouds, slotId);
-    if (!slot || !slot.plant) return;
-    if (!slot.plant.isThirsty) return;
-    if ((state.inventory.tools.waterCan ?? 0) <= 0) return;
+    set((s) => {
+      const slot = findSlot(s.clouds, slotId);
+      if (!slot || !slot.plant || !slot.plant.isThirsty) return s;
+      if ((s.inventory.tools.waterCan ?? 0) <= 0) return s;
 
-    set((s) => ({
-      inventory: {
-        ...s.inventory,
-        tools: {
-          ...s.inventory.tools,
-          waterCan: s.inventory.tools.waterCan - 1,
+      return {
+        inventory: {
+          ...s.inventory,
+          tools: { ...s.inventory.tools, waterCan: s.inventory.tools.waterCan - 1 },
         },
-      },
-      clouds: updateSlotInClouds(s.clouds, slotId, {
-        plant: slot.plant
-          ? { ...slot.plant, isThirsty: false }
-          : null,
-      }),
-    }));
+        clouds: updateSlotInClouds(s.clouds, slotId, {
+          plant: { ...slot.plant, isThirsty: false },
+        }),
+      };
+    });
   },
 
   removePest: (slotId) => {
-    const state = get();
-    const slot = findSlot(state.clouds, slotId);
-    if (!slot || !slot.plant) return;
-    if (!slot.plant.isPest) return;
-    if ((state.inventory.tools.insectNet ?? 0) <= 0) return;
+    set((s) => {
+      const slot = findSlot(s.clouds, slotId);
+      if (!slot || !slot.plant || !slot.plant.isPest) return s;
+      if ((s.inventory.tools.insectNet ?? 0) <= 0) return s;
 
-    const pestType = PLANTS[slot.plant.plantId].pestType;
+      const pestType = PLANTS[slot.plant.plantId].pestType;
 
-    set((s) => ({
-      inventory: {
-        ...s.inventory,
-        tools: {
-          ...s.inventory.tools,
-          insectNet: s.inventory.tools.insectNet - 1,
+      return {
+        inventory: {
+          ...s.inventory,
+          tools: { ...s.inventory.tools, insectNet: s.inventory.tools.insectNet - 1 },
+          pests: { ...s.inventory.pests, [pestType]: (s.inventory.pests[pestType] ?? 0) + 1 },
         },
-        pests: {
-          ...s.inventory.pests,
-          [pestType]: (s.inventory.pests[pestType] ?? 0) + 1,
-        },
-      },
-      clouds: updateSlotInClouds(s.clouds, slotId, {
-        plant: slot.plant
-          ? { ...slot.plant, isPest: false }
-          : null,
-      }),
-    }));
+        clouds: updateSlotInClouds(s.clouds, slotId, {
+          plant: { ...slot.plant, isPest: false },
+        }),
+      };
+    });
   },
 
   fertilize: (slotId, fertilizerId) => {
-    const state = get();
-    const slot = findSlot(state.clouds, slotId);
-    if (!slot || !slot.plant) return;
-    if (slot.plant.isFertilized) return;
-    if ((state.inventory.fertilizers[fertilizerId] ?? 0) <= 0) return;
+    set((s) => {
+      const slot = findSlot(s.clouds, slotId);
+      if (!slot || !slot.plant || slot.plant.isFertilized) return s;
+      if ((s.inventory.fertilizers[fertilizerId] ?? 0) <= 0) return s;
 
-    const plant = slot.plant;
-    const fert = FERTILIZERS[fertilizerId];
+      const plant = slot.plant;
+      const fert = FERTILIZERS[fertilizerId];
+      const timeReduction = 1 - fert.timeReductionPercent / 100;
+      const newRemainingTime = Math.max(1, Math.floor(plant.remainingTime * timeReduction));
 
-    // Recalculate remaining time with fertilizer applied
-    const timeReduction = 1 - fert.timeReductionPercent / 100;
-    const newRemainingTime = Math.max(1, Math.floor(plant.remainingTime * timeReduction));
-
-    set((s) => ({
-      inventory: {
-        ...s.inventory,
-        fertilizers: {
-          ...s.inventory.fertilizers,
-          [fertilizerId]: (s.inventory.fertilizers[fertilizerId] ?? 0) - 1,
+      return {
+        inventory: {
+          ...s.inventory,
+          fertilizers: {
+            ...s.inventory.fertilizers,
+            [fertilizerId]: (s.inventory.fertilizers[fertilizerId] ?? 0) - 1,
+          },
         },
-      },
-      clouds: updateSlotInClouds(s.clouds, slotId, {
-        plant: {
-          ...plant,
-          remainingTime: newRemainingTime,
-          totalGrowTime: Math.max(newRemainingTime, Math.floor(plant.totalGrowTime * timeReduction)),
-          isFertilized: true,
-        },
-      }),
-    }));
+        clouds: updateSlotInClouds(s.clouds, slotId, {
+          plant: {
+            ...plant,
+            remainingTime: newRemainingTime,
+            totalGrowTime: Math.max(newRemainingTime, Math.floor(plant.totalGrowTime * timeReduction)),
+            isFertilized: true,
+          },
+        }),
+      };
+    });
   },
 
   pickPot: (slotId) => {
-    const state = get();
-    const slot = findSlot(state.clouds, slotId);
-    if (!slot || !slot.potId) return;
-    // Can't pick up if there's a plant
-    if (slot.plant) return;
+    set((s) => {
+      const slot = findSlot(s.clouds, slotId);
+      if (!slot || !slot.potId) return s;
+      if (slot.plant) return s;
 
-    const potId = slot.potId;
-
-    set((s) => ({
-      inventory: {
-        ...s.inventory,
-        pots: {
-          ...s.inventory.pots,
-          [potId]: (s.inventory.pots[potId] ?? 0) + 1,
+      const potId = slot.potId;
+      return {
+        inventory: {
+          ...s.inventory,
+          pots: {
+            ...s.inventory.pots,
+            [potId]: (s.inventory.pots[potId] ?? 0) + 1,
+          },
         },
-      },
-      clouds: updateSlotInClouds(s.clouds, slotId, { potId: null }),
-    }));
+        clouds: updateSlotInClouds(s.clouds, slotId, { potId: null }),
+      };
+    });
   },
 
   placePot: (slotId, potId) => {
-    const state = get();
-    const slot = findSlot(state.clouds, slotId);
-    if (!slot || slot.potId) return; // slot already has pot
-    if ((state.inventory.pots[potId] ?? 0) <= 0) return;
+    // All validation inside set() to avoid stale state
+    set((s) => {
+      const slot = findSlot(s.clouds, slotId);
+      if (!slot || slot.potId) return s; // slot not found or already has pot
+      if ((s.inventory.pots[potId] ?? 0) <= 0) return s; // no pot in inventory
 
-    set((s) => ({
-      inventory: {
-        ...s.inventory,
-        pots: {
-          ...s.inventory.pots,
-          [potId]: (s.inventory.pots[potId] ?? 0) - 1,
+      return {
+        inventory: {
+          ...s.inventory,
+          pots: {
+            ...s.inventory.pots,
+            [potId]: (s.inventory.pots[potId] ?? 0) - 1,
+          },
         },
-      },
-      clouds: updateSlotInClouds(s.clouds, slotId, { potId }),
-    }));
+        clouds: updateSlotInClouds(s.clouds, slotId, { potId }),
+      };
+    });
   },
 
   // --- Growth Engine Tick ---

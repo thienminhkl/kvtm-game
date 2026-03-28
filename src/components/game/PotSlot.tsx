@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { useGameStore, getGrowthStage, PLANTS, POTS, PEST_NAMES } from "@/lib/game";
-import type { Slot, PlantGrowthStage } from "@/lib/game";
+import type { Slot, PlantGrowthStage, PotId } from "@/lib/game";
 
 interface PotSlotProps {
   slot: Slot;
@@ -54,13 +54,13 @@ export default function PotSlot({ slot }: PotSlotProps) {
   const selectedSeedId = useGameStore((s) => s.selectedSeedId);
   const selectedPotId = useGameStore((s) => s.selectedPotId);
   const selectedFertilizerId = useGameStore((s) => s.selectedFertilizerId);
-  const plantSeed = useGameStore((s) => s.plantSeed);
-  const harvest = useGameStore((s) => s.harvest);
-  const waterPlant = useGameStore((s) => s.waterPlant);
-  const removePest = useGameStore((s) => s.removePest);
-  const fertilize = useGameStore((s) => s.fertilize);
-  const pickPot = useGameStore((s) => s.pickPot);
-  const placePot = useGameStore((s) => s.placePot);
+  const storePlacePot = useGameStore((s) => s.placePot);
+  const storePlantSeed = useGameStore((s) => s.plantSeed);
+  const storeHarvest = useGameStore((s) => s.harvest);
+  const storeWaterPlant = useGameStore((s) => s.waterPlant);
+  const storeRemovePest = useGameStore((s) => s.removePest);
+  const storeFertilize = useGameStore((s) => s.fertilize);
+  const storePickPot = useGameStore((s) => s.pickPot);
 
   const plant = slot.plant;
   const potId = slot.potId;
@@ -81,37 +81,37 @@ export default function PotSlot({ slot }: PotSlotProps) {
     switch (activeTool) {
       case "tool_plant":
         if (potId && !plant && selectedSeedId) {
-          plantSeed(slot.id, selectedSeedId);
+          storePlantSeed(slot.id, selectedSeedId);
         }
         break;
       case "tool_harvest":
         if (plant && plant.remainingTime <= 0) {
-          harvest(slot.id);
+          storeHarvest(slot.id);
         }
         break;
       case "tool_water":
         if (plant?.isThirsty) {
-          waterPlant(slot.id);
+          storeWaterPlant(slot.id);
         }
         break;
       case "tool_pest":
         if (plant?.isPest) {
-          removePest(slot.id);
+          storeRemovePest(slot.id);
         }
         break;
       case "tool_fertilize":
         if (plant && !plant.isFertilized && selectedFertilizerId) {
-          fertilize(slot.id, selectedFertilizerId);
+          storeFertilize(slot.id, selectedFertilizerId);
         }
         break;
       case "tool_pick_pot":
         if (potId && !plant) {
-          pickPot(slot.id);
+          storePickPot(slot.id);
         }
         break;
       case "tool_place_pot":
         if (!potId && selectedPotId) {
-          placePot(slot.id, selectedPotId);
+          storePlacePot(slot.id, selectedPotId as PotId);
         }
         break;
     }
@@ -131,6 +131,8 @@ export default function PotSlot({ slot }: PotSlotProps) {
     }
   })();
 
+  // Visual hint when placing pot
+  const showPlacePotHint = activeTool === "tool_place_pot" && !potId && selectedPotId;
   const potDef = potId ? POTS[potId] : null;
   const plantDef = plant ? PLANTS[plant.plantId] : null;
 
@@ -142,22 +144,36 @@ export default function PotSlot({ slot }: PotSlotProps) {
         relative w-full aspect-square rounded-lg border-2 transition-all duration-200
         flex flex-col items-center justify-center gap-0.5 p-1
         ${potId ? getPotColor(potId) : "border-dashed border-neutral-600 bg-neutral-800/30"}
-        ${isClickable ? "cursor-pointer hover:border-white/60 hover:scale-105 hover:shadow-lg hover:shadow-white/10" : "cursor-default"}
+        ${isClickable
+          ? "cursor-pointer hover:border-white/60 hover:scale-105 hover:shadow-lg hover:shadow-white/10 active:scale-95"
+          : "cursor-default opacity-90"
+        }
+        ${showPlacePotHint ? "border-green-500 bg-green-900/30 animate-pulse" : ""}
         ${plant?.isPest ? "ring-2 ring-red-500 animate-pulse" : ""}
         ${plant?.isThirsty ? "ring-2 ring-yellow-500" : ""}
         ${plant && plant.remainingTime <= 0 ? "ring-2 ring-green-400" : ""}
       `}
     >
       {/* Empty slot - no pot */}
-      {!potId && (
-        <span className="text-neutral-500 text-xs">+ Chậu</span>
+      {!potId && !showPlacePotHint && (
+        <span className="text-neutral-500 text-xs select-none">+ Chậu</span>
+      )}
+
+      {/* Empty slot with pot selected - ready to place */}
+      {showPlacePotHint && (
+        <>
+          <span className="text-lg">🪴</span>
+          <span className="text-[10px] text-green-400 font-bold select-none">
+            Đặt chậu
+          </span>
+        </>
       )}
 
       {/* Pot but no plant */}
       {potId && !plant && (
         <>
           <span className="text-lg">🪴</span>
-          <span className="text-[10px] text-neutral-400 truncate w-full text-center">
+          <span className="text-[10px] text-neutral-400 truncate w-full text-center select-none">
             {potDef?.name}
           </span>
         </>
@@ -166,17 +182,14 @@ export default function PotSlot({ slot }: PotSlotProps) {
       {/* Plant growing or ready */}
       {plant && plantDef && (
         <>
-          {/* Growth stage icon */}
           <span className={`text-lg ${getStageColor(growthStage)} rounded px-1`}>
             {getStageLabel(growthStage).split(" ")[0]}
           </span>
 
-          {/* Plant name */}
-          <span className="text-[10px] text-white font-medium truncate w-full text-center">
+          <span className="text-[10px] text-white font-medium truncate w-full text-center select-none">
             {plantDef.name}
           </span>
 
-          {/* Progress bar */}
           <div className="w-[85%] h-1.5 bg-black/40 rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-300 ${
@@ -190,31 +203,28 @@ export default function PotSlot({ slot }: PotSlotProps) {
             />
           </div>
 
-          {/* Timer or status */}
           {plant.remainingTime <= 0 ? (
-            <span className="text-[10px] text-green-400 font-bold">
+            <span className="text-[10px] text-green-400 font-bold select-none">
               Thu hoạch!
             </span>
           ) : plant.isPest ? (
-            <span className="text-[10px] text-red-400 font-bold">
+            <span className="text-[10px] text-red-400 font-bold select-none">
               🐛 {PEST_NAMES[PLANTS[plant.plantId].pestType]}
             </span>
           ) : plant.isThirsty ? (
-            <span className="text-[10px] text-yellow-400 font-bold">
+            <span className="text-[10px] text-yellow-400 font-bold select-none">
               💧 Khát nước
             </span>
           ) : (
-            <span className="text-[9px] text-neutral-300">
+            <span className="text-[9px] text-neutral-300 select-none">
               {formatTime(plant.remainingTime)}
             </span>
           )}
 
-          {/* Fertilized indicator */}
           {plant.isFertilized && (
             <span className="absolute top-0.5 right-0.5 text-[8px]">✨</span>
           )}
 
-          {/* Pot tier indicator */}
           {potDef && potDef.expBuffPercent > 0 && (
             <span className="absolute bottom-0.5 right-0.5 text-[8px] text-neutral-400">
               +{potDef.expBuffPercent}%

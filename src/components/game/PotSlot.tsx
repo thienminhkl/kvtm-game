@@ -28,23 +28,23 @@ function getStageEmoji(stage: PlantGrowthStage): string {
   }
 }
 
-function getStageColor(stage: PlantGrowthStage): string {
+function getStageBg(stage: PlantGrowthStage): string {
   switch (stage) {
     case 0: return "";
-    case 1: return "bg-lime-900/40";
-    case 2: return "bg-green-900/40";
-    case 3: return "bg-emerald-900/40";
-    case 4: return "bg-amber-900/40";
+    case 1: return "bg-gradient-to-t from-lime-900/30 to-transparent";
+    case 2: return "bg-gradient-to-t from-green-900/30 to-transparent";
+    case 3: return "bg-gradient-to-t from-emerald-900/30 to-transparent";
+    case 4: return "bg-gradient-to-t from-amber-900/30 to-transparent";
   }
 }
 
 function getPotColor(potId: string): string {
   switch (potId) {
-    case "pot_soil": return "border-amber-800 bg-amber-950/60";
-    case "pot_bronze": return "border-orange-700 bg-orange-950/60";
-    case "pot_silver": return "border-slate-400 bg-slate-800/60";
-    case "pot_gold": return "border-yellow-500 bg-yellow-950/60";
-    case "pot_diamond": return "border-cyan-400 bg-cyan-950/60";
+    case "pot_soil": return "border-amber-800 bg-gradient-to-b from-amber-900/50 to-amber-950/70 shadow-inner";
+    case "pot_bronze": return "border-orange-600 bg-gradient-to-b from-orange-900/50 to-orange-950/70 shadow-inner";
+    case "pot_silver": return "border-slate-400 bg-gradient-to-b from-slate-700/50 to-slate-800/70 shadow-inner";
+    case "pot_gold": return "border-yellow-500 bg-gradient-to-b from-yellow-800/40 to-yellow-950/70 shadow-inner shadow-yellow-500/10";
+    case "pot_diamond": return "border-cyan-400 bg-gradient-to-b from-cyan-800/40 to-cyan-950/70 shadow-inner shadow-cyan-400/20";
     default: return "border-neutral-700 bg-neutral-800/60";
   }
 }
@@ -86,42 +86,27 @@ export default function PotSlot({ slot }: PotSlotProps) {
 
   const handleClick = () => {
     if (!activeTool) return;
-
     switch (activeTool) {
       case "tool_plant":
-        if (potId && !plant && selectedSeedId) {
-          storePlantSeed(slot.id, selectedSeedId);
-        }
+        if (potId && !plant && selectedSeedId) storePlantSeed(slot.id, selectedSeedId);
         break;
       case "tool_harvest":
-        if (plant && plant.remainingTime <= 0) {
-          storeHarvest(slot.id);
-        }
+        if (plant && plant.remainingTime <= 0) storeHarvest(slot.id);
         break;
       case "tool_water":
-        if (plant?.isThirsty) {
-          storeWaterPlant(slot.id);
-        }
+        if (plant?.isThirsty) storeWaterPlant(slot.id);
         break;
       case "tool_pest":
-        if (plant?.isPest) {
-          storeRemovePest(slot.id);
-        }
+        if (plant?.isPest) storeRemovePest(slot.id);
         break;
       case "tool_fertilize":
-        if (plant && !plant.isFertilized && selectedFertilizerId) {
-          storeFertilize(slot.id, selectedFertilizerId);
-        }
+        if (plant && !plant.isFertilized && selectedFertilizerId) storeFertilize(slot.id, selectedFertilizerId);
         break;
       case "tool_pick_pot":
-        if (potId && !plant) {
-          storePickPot(slot.id);
-        }
+        if (potId && !plant) storePickPot(slot.id);
         break;
       case "tool_place_pot":
-        if (!potId && selectedPotId) {
-          storePlacePot(slot.id, selectedPotId as PotId);
-        }
+        if (!potId && selectedPotId) storePlacePot(slot.id, selectedPotId as PotId);
         break;
     }
   };
@@ -143,6 +128,8 @@ export default function PotSlot({ slot }: PotSlotProps) {
   const showPlacePotHint = activeTool === "tool_place_pot" && !potId && selectedPotId;
   const potDef = potId ? POTS[potId] : null;
   const plantDef = plant ? PLANTS[plant.plantId] : null;
+  const isReady = plant && plant.remainingTime <= 0;
+  const isGrowing = plant && plant.remainingTime > 0 && !plant.isThirsty;
 
   return (
     <button
@@ -150,102 +137,112 @@ export default function PotSlot({ slot }: PotSlotProps) {
       disabled={!isClickable}
       className={`
         relative w-full aspect-square rounded-lg border-2 transition-all duration-200
-        flex flex-col items-center justify-center gap-0.5 p-1
-        ${potId ? getPotColor(potId) : "border-dashed border-neutral-600 bg-neutral-800/30"}
+        flex flex-col items-center justify-center gap-0.5 p-1 overflow-hidden
+        ${potId ? getPotColor(potId) : "border-dashed border-neutral-600/60 bg-white/5"}
         ${isClickable
           ? "cursor-pointer hover:border-white/60 hover:scale-105 hover:shadow-lg hover:shadow-white/10 active:scale-95"
-          : "cursor-default opacity-90"
+          : "cursor-default"
         }
         ${showPlacePotHint ? "border-green-500 bg-green-900/30 animate-pulse" : ""}
-        ${plant?.isPest ? "ring-2 ring-red-500 animate-pulse" : ""}
-        ${plant?.isThirsty ? "ring-2 ring-yellow-500" : ""}
-        ${plant && plant.remainingTime <= 0 ? "ring-2 ring-green-400 animate-pulse" : ""}
+        ${plant?.isPest ? "ring-2 ring-red-500/80" : ""}
+        ${plant?.isThirsty ? "ring-2 ring-yellow-500/80" : ""}
+        ${isReady ? "ring-2 ring-green-400 animate-ready-bounce" : ""}
       `}
     >
-      {/* Empty slot - no pot */}
-      {!potId && !showPlacePotHint && (
-        <span className="text-neutral-500 text-xs select-none">+ Chậu</span>
+      {/* Growth stage background */}
+      {plant && (
+        <div className={`absolute inset-0 ${getStageBg(growthStage)} transition-all duration-500`} />
       )}
 
-      {/* Empty slot with pot selected - ready to place */}
+      {/* Empty slot */}
+      {!potId && !showPlacePotHint && (
+        <span className="text-neutral-500 text-[10px] select-none">+</span>
+      )}
+
+      {/* Place pot hint */}
       {showPlacePotHint && (
         <>
-          <span className="text-lg">🪴</span>
-          <span className="text-[10px] text-green-400 font-bold select-none">
-            Đặt chậu
-          </span>
+          <span className="text-lg">🏺</span>
+          <span className="text-[9px] text-green-400 font-bold select-none">Đặt</span>
         </>
       )}
 
-      {/* Pot but no plant */}
+      {/* Pot only */}
       {potId && !plant && (
         <>
-          <span className="text-lg">🪴</span>
-          <span className="text-[10px] text-neutral-400 truncate w-full text-center select-none">
+          <span className="text-lg opacity-60">🏺</span>
+          <span className="text-[8px] text-neutral-500 truncate w-full text-center select-none">
             {potDef?.name}
           </span>
         </>
       )}
 
-      {/* Plant growing or ready */}
+      {/* Plant */}
       {plant && plantDef && (
         <>
-          {/* Growth stage emoji */}
-          <span className={`text-lg ${getStageColor(growthStage)} rounded px-1`}>
+          {/* Growth emoji with animation */}
+          <span
+            className={`text-lg relative z-10 ${plant.isPest ? "grayscale opacity-60" : ""}`}
+          >
             {getStageEmoji(growthStage)}
           </span>
 
           {/* Plant name */}
-          <span className="text-[10px] text-white font-semibold truncate w-full text-center select-none">
+          <span className="text-[9px] text-white/90 font-medium truncate w-full text-center select-none relative z-10">
             {plantDef.name}
           </span>
 
           {/* Progress bar */}
-          <div className="w-[85%] h-2 bg-black/40 rounded-full overflow-hidden">
+          <div className="w-[85%] h-1.5 bg-black/30 rounded-full overflow-hidden relative z-10">
             <div
-              className={`h-full rounded-full transition-all duration-300 ${
-                growthStage === 4
-                  ? "bg-green-400"
-                  : plant.isPest || plant.isThirsty
-                    ? "bg-yellow-500"
-                    : "bg-blue-400"
+              className={`h-full rounded-full transition-all duration-500 ${
+                isReady
+                  ? "bg-gradient-to-r from-green-400 to-emerald-400"
+                  : plant.isPest
+                    ? "bg-gradient-to-r from-red-500 to-orange-500"
+                    : plant.isThirsty
+                      ? "bg-gradient-to-r from-yellow-500 to-amber-500"
+                      : "bg-gradient-to-r from-blue-400 to-cyan-400"
               }`}
               style={{ width: `${Math.round(progress * 100)}%` }}
             />
           </div>
 
           {/* Status / Timer */}
-          {plant.remainingTime <= 0 ? (
-            <span className="text-[11px] text-green-400 font-bold select-none">
-              THU HOẠCH!
-            </span>
-          ) : plant.isPest ? (
-            <span className="text-[10px] text-red-400 font-bold select-none">
-              🐛 {PEST_NAMES[PLANTS[plant.plantId].pestType]}
-            </span>
-          ) : plant.isThirsty ? (
-            <span className="text-[10px] text-yellow-400 font-bold select-none">
-              💧 Khát nước
-            </span>
-          ) : (
-            <span
-              className={`text-[11px] font-bold tabular-nums select-none ${getTimerColor(
-                plant.remainingTime,
-                plant.totalGrowTime
-              )}`}
-            >
-              ⏱ {formatTime(plant.remainingTime)}
-            </span>
-          )}
+          <div className="relative z-10">
+            {isReady ? (
+              <span className="text-[10px] text-green-300 font-bold select-none">
+                THU HOẠCH!
+              </span>
+            ) : plant.isPest ? (
+              <span className="text-[9px] text-red-300 font-bold select-none">
+                🐛 {PEST_NAMES[PLANTS[plant.plantId].pestType]}
+              </span>
+            ) : plant.isThirsty ? (
+              <span className="text-[9px] text-yellow-300 font-bold select-none">
+                💧 Tưới nước
+              </span>
+            ) : (
+              <span
+                className={`text-[10px] font-bold tabular-nums select-none ${getTimerColor(
+                  plant.remainingTime,
+                  plant.totalGrowTime
+                )}`}
+              >
+                ⏱{formatTime(plant.remainingTime)}
+              </span>
+            )}
+          </div>
 
-          {/* Fertilized indicator */}
+          {/* Corner indicators */}
           {plant.isFertilized && (
-            <span className="absolute top-0.5 right-0.5 text-[8px]">✨</span>
+            <span className="absolute top-0.5 right-0.5 text-[7px] z-10">✨</span>
           )}
-
-          {/* Pot tier indicator */}
+          {plant.isPest && isGrowing && (
+            <span className="absolute top-0.5 left-0.5 text-[7px] z-10">🐛</span>
+          )}
           {potDef && potDef.expBuffPercent > 0 && (
-            <span className="absolute bottom-0.5 right-0.5 text-[8px] text-neutral-400">
+            <span className="absolute bottom-0.5 right-0.5 text-[7px] text-neutral-400 z-10">
               +{potDef.expBuffPercent}%
             </span>
           )}

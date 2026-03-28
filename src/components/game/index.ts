@@ -5,5 +5,5 @@ export { default as CloudGrid } from "./CloudGrid";
 export { default as CloudNavigator } from "./CloudNavigator";
 export { default as UserBar } from "./UserBar";
 export { default as InventoryPanel } from "./InventoryPanel";
-export { default as MonkeyToggle } from "./MonkeyToggle";
+export { default as BirdAI } from "./BirdAI";
 export { default as GameBoard } from "./GameBoard";

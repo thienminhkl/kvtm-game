@@ -1,1 +1,64 @@
 @import "tailwindcss";
+
+/* Cloud float animation */
+@keyframes cloud-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+/* Growth pulse animation */
+@keyframes growth-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+/* Bird fly animation */
+@keyframes bird-fly {
+  0% { transform: translate(var(--bird-from-x), var(--bird-from-y)) scale(0.8); opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { transform: translate(var(--bird-to-x), var(--bird-to-y)) scale(0.8); opacity: 0; }
+}
+
+/* Beanstalk sway */
+@keyframes vine-sway {
+  0%, 100% { transform: skewX(0deg); }
+  25% { transform: skewX(1deg); }
+  75% { transform: skewX(-1deg); }
+}
+
+/* Ready harvest bounce */
+@keyframes ready-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+/* Monkey scan highlight */
+@keyframes scan-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.4); }
+  50% { box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.2); }
+}
+
+.animate-cloud-float {
+  animation: cloud-float 4s ease-in-out infinite;
+}
+
+.animate-growth-pulse {
+  animation: growth-pulse 0.4s ease-in-out;
+}
+
+.animate-bird-fly {
+  animation: bird-fly 1s ease-in-out forwards;
+}
+
+.animate-vine-sway {
+  animation: vine-sway 6s ease-in-out infinite;
+}
+
+.animate-ready-bounce {
+  animation: ready-bounce 0.8s ease-in-out infinite;
+}
+
+.animate-scan-pulse {
+  animation: scan-pulse 1s ease-in-out infinite;
+}

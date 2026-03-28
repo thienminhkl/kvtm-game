@@ -23,6 +23,7 @@ import {
   FERTILIZERS,
   MACHINES,
   SHOP_ITEM_MAP,
+  POT_UPGRADE_CHAIN,
   CLOUD_LAYER_COUNT,
   SLOTS_PER_LAYER,
   PEST_SPAWN_CHANCE,
@@ -763,6 +764,96 @@ export const useGameStore = create<GameStore>((set, get) => ({
     });
 
     return true;
+  },
+
+  // --- Pot Upgrade ---
+  upgradePot: (fromPotId) => {
+    const upgrade = POT_UPGRADE_CHAIN[fromPotId];
+    if (!upgrade) return false; // max tier
+
+    const state = get();
+
+    // Need 2 pots of current tier
+    if ((state.inventory.pots[fromPotId] ?? 0) < 2) return false;
+
+    // Need pests
+    if ((state.inventory.pests[upgrade.pestType] ?? 0) < upgrade.pestAmount) return false;
+
+    set((s) => ({
+      inventory: {
+        ...s.inventory,
+        pots: {
+          ...s.inventory.pots,
+          [fromPotId]: (s.inventory.pots[fromPotId] ?? 0) - 2,
+          [upgrade.to]: (s.inventory.pots[upgrade.to] ?? 0) + 1,
+        },
+        pests: {
+          ...s.inventory.pests,
+          [upgrade.pestType]: (s.inventory.pests[upgrade.pestType] ?? 0) - upgrade.pestAmount,
+        },
+      },
+    }));
+
+    return true;
+  },
+
+  // --- Save/Load ---
+  saveGame: () => {
+    const state = get();
+    const saveData = {
+      user: state.user,
+      inventory: state.inventory,
+      clouds: state.clouds,
+      machines: state.machines,
+      monkey: state.monkey,
+      activeCloudIndex: state.activeCloudIndex,
+      savedAt: Date.now(),
+    };
+    try {
+      localStorage.setItem("kvtm_save", JSON.stringify(saveData));
+    } catch {
+      // localStorage not available
+    }
+  },
+
+  loadGame: () => {
+    try {
+      const raw = localStorage.getItem("kvtm_save");
+      if (!raw) return false;
+      const data = JSON.parse(raw);
+      set({
+        user: data.user,
+        inventory: data.inventory,
+        clouds: data.clouds,
+        machines: data.machines,
+        monkey: data.monkey,
+        activeCloudIndex: data.activeCloudIndex ?? 0,
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  resetGame: () => {
+    localStorage.removeItem("kvtm_save");
+    set({
+      user: IS_SANDBOX ? createSandboxUser() : createProductionUser(),
+      inventory: IS_SANDBOX ? createSandboxInventory() : createProductionInventory(),
+      clouds: createInitialClouds(),
+      machines: [
+        { id: "juicer", craftingRecipeIndex: null, craftingRemainingTime: 0, hasProduct: false },
+        { id: "oven", craftingRecipeIndex: null, craftingRemainingTime: 0, hasProduct: false },
+        { id: "dryer", craftingRecipeIndex: null, craftingRemainingTime: 0, hasProduct: false },
+      ],
+      monkey: { isActive: false, bananasRemaining: IS_SANDBOX ? 99 : 0, autoPlantSeedId: null, currentSlotIndex: 0, isActing: false },
+      activeCloudIndex: 0,
+      activeTool: null,
+      selectedSeedId: null,
+      selectedPotId: null,
+      selectedFertilizerId: null,
+      currentView: "cloud",
+    });
   },
 }));
 

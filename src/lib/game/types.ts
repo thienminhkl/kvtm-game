@@ -214,6 +214,14 @@ export interface GameStore {
 
   // Shop
   buyItem: (shopItemId: string) => boolean;
+
+  // Pot Upgrade
+  upgradePot: (fromPotId: PotId) => boolean;
+
+  // Save/Load
+  saveGame: () => void;
+  loadGame: () => boolean;
+  resetGame: () => void;
 }
 
 // --- Machines ---

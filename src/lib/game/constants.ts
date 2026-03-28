@@ -157,6 +157,15 @@ export const POTS: Record<PotId, PotDefinition> = {
 
 export const POT_IDS: PotId[] = Object.keys(POTS) as PotId[];
 
+// Pot upgrade chain: 2 low-tier pots + pests → 1 high-tier pot
+export const POT_UPGRADE_CHAIN: Record<PotId, { to: PotId; pestType: PestType; pestAmount: number } | null> = {
+  pot_soil: { to: "pot_bronze", pestType: "beetle", pestAmount: 5 },
+  pot_bronze: { to: "pot_silver", pestType: "caterpillar", pestAmount: 10 },
+  pot_silver: { to: "pot_gold", pestType: "snail", pestAmount: 20 },
+  pot_gold: { to: "pot_diamond", pestType: "dragonfly", pestAmount: 50 },
+  pot_diamond: null, // max tier
+};
+
 // --- Fertilizers ---
 
 export const FERTILIZERS: Record<FertilizerId, FertilizerDefinition> = {

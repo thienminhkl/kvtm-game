@@ -24,22 +24,22 @@ export default function GameBoard() {
       }`}
     >
       {/* Top: User stats + view toggle */}
-      <div className="p-2 flex items-start gap-2">
+      <div className="p-1.5 sm:p-2 flex items-start gap-1.5 sm:gap-2">
         <UserBar />
         <button
           onClick={() => setCurrentView(isCloud ? "ground" : "cloud")}
-          className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-neutral-800/80 border border-neutral-700 text-[11px] text-neutral-300 hover:bg-neutral-700 transition-all"
+          className="flex-shrink-0 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-neutral-800/80 border border-neutral-700 text-[10px] sm:text-[11px] text-neutral-300 hover:bg-neutral-700 transition-all"
         >
-          {isCloud ? "🏠 Nhà" : "☁️ Mây"}
+          {isCloud ? "🏠" : "☁️"}<span className="hidden sm:inline"> {isCloud ? "Nhà" : "Mây"}</span>
         </button>
       </div>
 
-      {/* Center: 3-column layout */}
-      <div className="flex-1 flex items-center justify-center gap-3 px-3 pb-2 overflow-hidden">
+      {/* Center: Game area */}
+      <div className="flex-1 flex items-center justify-center gap-2 sm:gap-3 px-2 sm:px-3 pb-2 overflow-x-auto">
         {isCloud ? (
           <>
-            {/* Left: Beanstalk */}
-            <div className="flex-shrink-0 h-[200px]">
+            {/* Left: Beanstalk - hidden on small screens */}
+            <div className="hidden sm:block flex-shrink-0 h-[200px]">
               <Beanstalk />
             </div>
 
@@ -58,7 +58,7 @@ export default function GameBoard() {
 
       {/* Bottom: Toolbar */}
       {isCloud && (
-        <div className="sticky bottom-0 p-2 flex justify-center">
+        <div className="sticky bottom-0 p-1.5 sm:p-2 flex justify-center overflow-x-auto">
           <Toolbar />
         </div>
       )}

@@ -69,3 +69,6 @@ export { useGameStore, getGrowthStage } from "./store";
 
 // Engine
 export { useGameEngine } from "./engine";
+
+// Shortcuts
+export { useKeyboardShortcuts } from "./shortcuts";

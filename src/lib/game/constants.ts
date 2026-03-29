@@ -91,6 +91,15 @@ export const PLANTS: Record<PlantId, PlantDefinition> = {
     goldReward: 25000,
     unlockLevel: 20,
   },
+  cay_ngo: {
+    id: "cay_ngo",
+    name: "Cây Ngô",
+    growTimeSeconds: 86400,
+    pestType: "dragonfly",
+    expReward: 5000,
+    goldReward: 80000,
+    unlockLevel: 25,
+  },
 };
 
 export const PLANT_IDS: PlantId[] = Object.keys(PLANTS) as PlantId[];
@@ -361,6 +370,7 @@ export const SHOP_ITEMS: ShopItem[] = [
   { id: "buy_hoa_huong_duong", name: "Hạt Hướng Dương", icon: "🌱", category: "seeds", price: 5000, currency: "gold", quantity: 2, unlockLevel: 12, target: { type: "seed", id: "hoa_huong_duong" } },
   { id: "buy_cay_tao", name: "Hạt Cây Táo", icon: "🌱", category: "seeds", price: 10000, currency: "gold", quantity: 1, unlockLevel: 15, target: { type: "seed", id: "cay_tao" } },
   { id: "buy_cay_dau", name: "Hạt Cây Dâu", icon: "🌱", category: "seeds", price: 20000, currency: "gold", quantity: 1, unlockLevel: 20, target: { type: "seed", id: "cay_dau" } },
+  { id: "buy_cay_ngo", name: "Hạt Cây Ngô", icon: "🌱", category: "seeds", price: 50000, currency: "gold", quantity: 1, unlockLevel: 25, target: { type: "seed", id: "cay_ngo" } },
 
   // Pots
   { id: "buy_pot_soil", name: "Chậu Đất", icon: "🏺", category: "pots", price: 100, currency: "gold", quantity: 1, unlockLevel: 1, target: { type: "pot", id: "pot_soil" } },

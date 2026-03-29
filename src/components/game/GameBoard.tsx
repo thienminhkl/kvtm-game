@@ -1,19 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { useGameStore, useGameEngine } from "@/lib/game";
+import { useGameStore, useGameEngine, useKeyboardShortcuts } from "@/lib/game";
 import UserBar from "./UserBar";
 import Toolbar from "./Toolbar";
 import CloudGrid from "./CloudGrid";
 import CloudNavigator from "./CloudNavigator";
-import Beanstalk from "./Beanstalk";
 import GroundView from "./GroundView";
 import SettingsPanel from "./SettingsPanel";
 import ToastContainer from "./ToastContainer";
 import AchievementPanel from "./AchievementPanel";
+import Tutorial from "./Tutorial";
 
 export default function GameBoard() {
   useGameEngine();
+  useKeyboardShortcuts();
   const currentView = useGameStore((s) => s.currentView);
   const setCurrentView = useGameStore((s) => s.setCurrentView);
   const isSandbox = useGameStore((s) => s.isSandbox);
@@ -32,6 +33,9 @@ export default function GameBoard() {
     >
       {/* Toast notifications */}
       <ToastContainer />
+
+      {/* Tutorial overlay */}
+      <Tutorial />
 
       {/* Top: User stats + buttons */}
       <div className="p-1.5 sm:p-2 flex items-start gap-1.5 sm:gap-2">
@@ -87,17 +91,15 @@ export default function GameBoard() {
         </div>
       )}
 
-      {/* Center: Game area */}
-      <div className="flex-1 flex items-center justify-center gap-2 sm:gap-3 px-2 sm:px-3 pb-2 overflow-x-auto">
+      {/* Center: Game area - per spec wireframe */}
+      <div className="flex-1 flex items-center justify-center gap-2 sm:gap-3 px-2 sm:px-3 pb-2">
         {isCloud ? (
           <>
-            <div className="hidden sm:block flex-shrink-0 h-[200px]">
-              <Beanstalk />
-            </div>
+            {/* Beanstalk + nav (left side per spec) */}
+            <CloudNavigator />
+
+            {/* Cloud grid (center, 3x3 per spec) */}
             <CloudGrid />
-            <div className="flex-shrink-0">
-              <CloudNavigator />
-            </div>
           </>
         ) : (
           <GroundView />
@@ -106,7 +108,7 @@ export default function GameBoard() {
 
       {/* Bottom: Toolbar */}
       {isCloud && (
-        <div className="sticky bottom-0 p-1.5 sm:p-2 flex justify-center overflow-x-auto">
+        <div className="sticky bottom-0 p-1.5 sm:p-2 flex justify-center">
           <Toolbar />
         </div>
       )}

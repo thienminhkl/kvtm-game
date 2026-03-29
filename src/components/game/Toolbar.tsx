@@ -5,14 +5,14 @@ import { useGameStore, TOOLS, PLANT_IDS, POT_IDS, PLANTS } from "@/lib/game";
 import type { ToolId, PlantId } from "@/lib/game";
 import ToolMenu from "./ToolMenu";
 
-const TOOL_ITEMS: { id: ToolId; icon: string; label: string }[] = [
-  { id: "tool_place_pot", icon: "🏺", label: "Đặt Chậu" },
-  { id: "tool_plant", icon: "🌱", label: "Trồng" },
-  { id: "tool_water", icon: "💧", label: "Tưới" },
-  { id: "tool_pest", icon: "🐛", label: "Bắt Sâu" },
-  { id: "tool_fertilize", icon: "🧪", label: "Bón Phân" },
-  { id: "tool_harvest", icon: "🌾", label: "Thu Hoạch" },
-  { id: "tool_pick_pot", icon: "📦", label: "Cất Chậu" },
+const TOOL_ITEMS: { id: ToolId; icon: string; label: string; key: string }[] = [
+  { id: "tool_place_pot", icon: "🏺", label: "Đặt Chậu", key: "1" },
+  { id: "tool_plant", icon: "🌱", label: "Trồng", key: "2" },
+  { id: "tool_water", icon: "💧", label: "Tưới", key: "3" },
+  { id: "tool_pest", icon: "🐛", label: "Bắt Sâu", key: "4" },
+  { id: "tool_fertilize", icon: "🧪", label: "Bón Phân", key: "5" },
+  { id: "tool_harvest", icon: "🌾", label: "Thu Hoạch", key: "6" },
+  { id: "tool_pick_pot", icon: "📦", label: "Cất Chậu", key: "7" },
 ];
 
 const TOOLS_WITH_MENU: ToolId[] = ["tool_plant", "tool_place_pot", "tool_fertilize"];
@@ -39,13 +39,13 @@ export default function Toolbar() {
   return (
     <div className="relative flex items-center gap-1 bg-neutral-800/90 rounded-lg px-2 py-1.5 border border-neutral-700">
       {/* Tool buttons */}
-      {TOOL_ITEMS.map(({ id, icon, label }) => {
+      {TOOL_ITEMS.map(({ id, icon, label, key }) => {
         const isActive = activeTool === id;
         return (
           <button
             key={id}
             onClick={() => handleToolClick(id)}
-            title={label}
+            title={`${label} (${key})`}
             className={`
               w-9 h-9 rounded-md flex items-center justify-center text-base
               transition-all duration-150 relative
@@ -56,6 +56,10 @@ export default function Toolbar() {
             `}
           >
             {icon}
+            {/* Keyboard shortcut hint */}
+            <span className="absolute -bottom-0.5 -right-0.5 text-[7px] text-neutral-400 bg-neutral-800 rounded px-0.5 leading-tight">
+              {key}
+            </span>
             {isActive && (
               <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] text-blue-300 whitespace-nowrap bg-neutral-900/80 px-1 rounded">
                 {label}
@@ -115,9 +119,9 @@ export default function Toolbar() {
         </>
       ) : null}
 
-      {/* ToolMenu overlay */}
+      {/* ToolMenu - render above toolbar area */}
       {showMenu && (
-        <div className="absolute bottom-full left-0 mb-1 z-50">
+        <div className="absolute bottom-full left-0 mb-2 z-50 max-w-[90vw]">
           <ToolMenu />
         </div>
       )}

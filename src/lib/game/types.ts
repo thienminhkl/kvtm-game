@@ -12,7 +12,8 @@ export type PlantId =
   | "hoa_tulip"
   | "hoa_huong_duong"
   | "cay_tao"
-  | "cay_dau";
+  | "cay_dau"
+  | "cay_ngo";
 
 export type PotId = "pot_soil" | "pot_bronze" | "pot_silver" | "pot_gold" | "pot_diamond";
 
@@ -29,7 +30,7 @@ export type PestType = "beetle" | "caterpillar" | "snail" | "dragonfly";
 
 export type FertilizerId = "fertilizer_basic" | "fertilizer_advanced" | "fertilizer_premium";
 
-export type PlantGrowthStage = 0 | 1 | 2 | 3 | 4; // 0=empty, 1=25%, 2=50%, 3=75%, 4=100% ready
+export type PlantGrowthStage = 0 | 1 | 2 | 3 | 4; // 0=0% (empty pot), 1=25% (sprout), 2=50% (young), 3=75% (growing), 4=100% (harvest ready)
 
 export type MachineId = "juicer" | "oven" | "dryer";
 

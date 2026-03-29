@@ -148,6 +148,7 @@ function createSandboxInventory() {
       hoa_huong_duong: 99,
       cay_tao: 99,
       cay_dau: 99,
+      cay_ngo: 99,
     },
     pots: {
       pot_soil: 99,
@@ -504,8 +505,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
           if (!slot.plant) return slot;
           const plant = slot.plant;
 
-          // Paused only if thirsty (need water once after planting)
-          if (plant.isThirsty) return slot;
+          // Paused if pest or thirsty (per spec: isPest pauses growth)
+          if (plant.isPest || plant.isThirsty) return slot;
 
           changed = true;
           let newRemaining = plant.remainingTime - 1;

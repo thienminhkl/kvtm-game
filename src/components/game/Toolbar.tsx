@@ -37,8 +37,8 @@ export default function Toolbar() {
   const totalPots = POT_IDS.reduce((s, id) => s + (inventory.pots[id] ?? 0), 0);
 
   return (
-    <div className="relative flex items-center gap-1 bg-neutral-800/90 rounded-lg px-2 py-1.5 border border-neutral-700">
-      {/* Tool buttons */}
+    <div className="relative flex items-center gap-1 bg-wood rounded-xl px-2 py-1.5 border border-amber-900/50 shadow-lg">
+      {/* Tool buttons - wooden squares per spec */}
       {TOOL_ITEMS.map(({ id, icon, label, key }) => {
         const isActive = activeTool === id;
         return (
@@ -47,11 +47,11 @@ export default function Toolbar() {
             onClick={() => handleToolClick(id)}
             title={`${label} (${key})`}
             className={`
-              w-9 h-9 rounded-md flex items-center justify-center text-base
+              w-10 h-10 rounded-lg flex items-center justify-center text-base
               transition-all duration-150 relative
               ${isActive
-                ? "bg-blue-600 ring-2 ring-blue-400 scale-110"
-                : "bg-neutral-700 hover:bg-neutral-600"
+                ? "bg-wood-btn-active ring-2 ring-yellow-400/60 scale-105"
+                : "bg-wood-btn hover:scale-105"
               }
             `}
           >

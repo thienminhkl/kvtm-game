@@ -40,12 +40,12 @@ function getStageBg(stage: PlantGrowthStage): string {
 
 function getPotColor(potId: string): string {
   switch (potId) {
-    case "pot_soil": return "border-amber-800 bg-gradient-to-b from-amber-900/50 to-amber-950/70 shadow-inner";
-    case "pot_bronze": return "border-orange-600 bg-gradient-to-b from-orange-900/50 to-orange-950/70 shadow-inner";
-    case "pot_silver": return "border-slate-400 bg-gradient-to-b from-slate-700/50 to-slate-800/70 shadow-inner";
-    case "pot_gold": return "border-yellow-500 bg-gradient-to-b from-yellow-800/40 to-yellow-950/70 shadow-inner shadow-yellow-500/10";
-    case "pot_diamond": return "border-cyan-400 bg-gradient-to-b from-cyan-800/40 to-cyan-950/70 shadow-inner shadow-cyan-400/20";
-    default: return "border-neutral-700 bg-neutral-800/60";
+    case "pot_soil": return "pot-soil border-2";
+    case "pot_bronze": return "pot-bronze border-2";
+    case "pot_silver": return "pot-silver border-2";
+    case "pot_gold": return "pot-gold border-2";
+    case "pot_diamond": return "pot-diamond border-2";
+    default: return "border-2 border-neutral-700 bg-neutral-800/60";
   }
 }
 

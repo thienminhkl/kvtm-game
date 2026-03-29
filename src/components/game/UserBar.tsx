@@ -10,11 +10,11 @@ export default function UserBar() {
     : 0;
 
   return (
-    <div className="flex-1 flex items-center gap-2 sm:gap-4 bg-neutral-800/80 rounded-lg px-2 sm:px-4 py-1.5 sm:py-2 border border-neutral-700 min-w-0">
-      {/* Level */}
+    <div className="flex-1 flex items-center gap-2 sm:gap-4 glass-dark rounded-xl px-3 sm:px-4 py-1.5 sm:py-2 min-w-0">
+      {/* Level with star */}
       <div className="flex items-center gap-1">
         <span className="text-base sm:text-lg">⭐</span>
-        <span className="text-xs sm:text-sm font-bold text-yellow-400">{user.level}</span>
+        <span className="text-xs sm:text-sm font-bold text-yellow-400 text-stroke">{user.level}</span>
       </div>
 
       {/* EXP Bar */}
@@ -23,18 +23,18 @@ export default function UserBar() {
           <span>EXP</span>
           <span>{user.exp}/{user.expToNextLevel}</span>
         </div>
-        <div className="h-1.5 sm:h-2 bg-neutral-700 rounded-full overflow-hidden">
+        <div className="h-2 bg-neutral-800/60 rounded-full overflow-hidden border border-neutral-600/30">
           <div
-            className="h-full bg-purple-500 rounded-full transition-all duration-500"
+            className="h-full bg-gradient-to-r from-purple-600 to-purple-400 rounded-full transition-all duration-500"
             style={{ width: `${expPercent}%` }}
           />
         </div>
       </div>
 
-      {/* Gold */}
+      {/* Gold - text-stroke per spec */}
       <div className="flex items-center gap-0.5 sm:gap-1">
         <span className="text-base sm:text-lg">💰</span>
-        <span className="text-xs sm:text-sm font-bold text-yellow-300">
+        <span className="text-xs sm:text-sm font-bold text-yellow-300 text-stroke">
           {user.gold >= 1000000
             ? `${Math.floor(user.gold / 1000)}k`
             : user.gold.toLocaleString("en-US")
@@ -45,7 +45,7 @@ export default function UserBar() {
       {/* Ruby */}
       <div className="flex items-center gap-0.5 sm:gap-1">
         <span className="text-base sm:text-lg">💎</span>
-        <span className="text-xs sm:text-sm font-bold text-red-400">
+        <span className="text-xs sm:text-sm font-bold text-red-400 text-stroke">
           {user.ruby}
         </span>
       </div>

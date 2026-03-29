@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 
 interface TutorialStep {
   title: string;
@@ -9,116 +9,53 @@ interface TutorialStep {
 }
 
 const STEPS: TutorialStep[] = [
-  {
-    title: "Chào mừng!",
-    icon: "☁️",
-    content: "Chào mừng đến Khu Vườn Trên Mây! Game nông trại trên mây.\n\nBạn sẽ trồng cây, chăm sóc và thu hoạch để kiếm vàng và kinh nghiệm.",
-  },
-  {
-    title: "Đặt chậu",
-    icon: "🏺",
-    content: "1. Bấm nút 🏺 Đặt Chậu ở thanh công cụ dưới\n2. Chọn loại chậu từ menu hiện ra\n3. Click vào ô trống (+) trên tầng mây\n\nMỗi ô cần một chậu trước khi trồng cây.",
-  },
-  {
-    title: "Trồng cây",
-    icon: "🌱",
-    content: "1. Bấm nút 🌱 Trồng\n2. Chọn hạt giống từ menu\n3. Click vào ô có chậu\n\nCây sẽ cần tưới nước 1 lần trước khi bắt đầu lớn.",
-  },
-  {
-    title: "Tưới nước",
-    icon: "💧",
-    content: "1. Bấm nút 💧 Tưới\n2. Click vào cây hiện 💧 Khát nước\n\nSau khi tưới, cây sẽ tự lớn. Chỉ cần tưới 1 lần duy nhất.",
-  },
-  {
-    title: "Sâu bọ",
-    icon: "🐛",
-    content: "Sâu bọ có thể xuất hiện khi cây đang lớn.\n\n• Cây vẫn tiếp tục lớn bình thường\n• Sâu tự mất khi cây chín\n• Hoặc bấm 🐛 Bắt Sâu để xử lý sớm\n• 🐒 Khỉ cũng tự bắt sâu nếu bật",
-  },
-  {
-    title: "Thu hoạch",
-    icon: "🌾",
-    content: "Khi cây chín (hiện THU HOẠCH!):\n\n1. Bấm nút 🌾 Thu Hoạch\n2. Click vào cây chín\n\nNhận vàng 💰 và kinh nghiệm ⭐.",
-  },
-  {
-    title: "Cửa hàng & Máy",
-    icon: "🏠",
-    content: "Bấm 🏠 Nhà để xuống tầng trệt:\n\n• 🏪 Cửa Hàng: mua hạt, chậu, phân, công cụ\n• 🔨 Nâng Cấp: đập 2 chậu + sâu → chậu tốt hơn\n• 🧃 Máy: chế tạo sản phẩm từ cây thu hoạch",
-  },
-  {
-    title: "Sẵn sàng!",
-    icon: "🎉",
-    content: "Bạn đã biết cách chơi!\n\nMẹo:\n• Bấm ⚙️ để xem cài đặt\n• Bấm 🏆 để xem thành tích\n• Game tự lưu mỗi 30 giây\n• Khỉ 🐒 giúp tự động chăm sóc\n\nChúc bạn chơi vui! 🌸",
-  },
+  { title: "Chào mừng!", icon: "☁️", content: "Chào mừng đến Khu Vườn Trên Mây!\n\nBạn sẽ trồng cây, chăm sóc và thu hoạch." },
+  { title: "Đặt chậu", icon: "🏺", content: "1. Bấm 🏺 Đặt Chậu\n2. Chọn chậu từ menu\n3. Click ô trống trên tầng mây" },
+  { title: "Trồng cây", icon: "🌱", content: "1. Bấm 🌱 Trồng\n2. Chọn hạt giống\n3. Click vào ô có chậu" },
+  { title: "Tưới nước", icon: "💧", content: "1. Bấm 💧 Tưới\n2. Click cây khát nước\nChỉ cần tưới 1 lần!" },
+  { title: "Thu hoạch", icon: "🌾", content: "Khi cây chín:\n1. Bấm 🌾 Thu Hoạch\n2. Click cây chín\nNhận vàng + EXP!" },
+  { title: "Sẵn sàng!", icon: "🎉", content: "• ⚙️ Cài đặt  • 🏆 Thành tích\n• Game tự lưu mỗi 30s\n• 🐒 Khỉ giúp tự động chăm sóc\nChúc bạn chơi vui! 🌸" },
 ];
 
 export default function Tutorial() {
-  const [show, setShow] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return !localStorage.getItem("kvtm_tutorial_done");
-  });
+  const [show, setShow] = useState(true);
   const [step, setStep] = useState(0);
+
+  const handleNext = useCallback(() => {
+    if (step >= STEPS.length - 1) {
+      setShow(false);
+    } else {
+      setStep(s => s + 1);
+    }
+  }, [step]);
+
+  const handleSkip = useCallback(() => {
+    setShow(false);
+  }, []);
 
   if (!show) return null;
 
   const current = STEPS[step];
   const isLast = step === STEPS.length - 1;
 
-  const handleNext = () => {
-    if (isLast) {
-      localStorage.setItem("kvtm_tutorial_done", "1");
-      setShow(false);
-    } else {
-      setStep(step + 1);
-    }
-  };
-
-  const handleSkip = () => {
-    localStorage.setItem("kvtm_tutorial_done", "1");
-    setShow(false);
-  };
-
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="bg-neutral-800 rounded-2xl border border-neutral-600 w-[90%] max-w-[360px] overflow-hidden shadow-2xl">
-        {/* Icon */}
-        <div className="flex justify-center pt-6 pb-2">
-          <span className="text-5xl">{current.icon}</span>
+      <div className="bg-neutral-800 rounded-2xl border border-neutral-600 w-[90%] max-w-[340px] overflow-hidden shadow-2xl">
+        <div className="flex justify-center pt-5 pb-1">
+          <span className="text-4xl">{current.icon}</span>
         </div>
-
-        {/* Content */}
-        <div className="px-5 pb-2 text-center">
-          <h2 className="text-lg font-bold text-white mb-2">{current.title}</h2>
-          <p className="text-[12px] text-neutral-300 whitespace-pre-line leading-relaxed">
-            {current.content}
-          </p>
+        <div className="px-4 pb-1 text-center">
+          <h2 className="text-base font-bold text-white mb-1">{current.title}</h2>
+          <p className="text-[11px] text-neutral-300 whitespace-pre-line leading-relaxed">{current.content}</p>
         </div>
-
-        {/* Progress dots */}
-        <div className="flex justify-center gap-1.5 py-3">
+        <div className="flex justify-center gap-1.5 py-2">
           {STEPS.map((_, i) => (
-            <div
-              key={i}
-              className={`w-2 h-2 rounded-full transition-all ${
-                i === step ? "bg-blue-400 scale-125" : i < step ? "bg-blue-600" : "bg-neutral-600"
-              }`}
-            />
+            <div key={i} className={`w-1.5 h-1.5 rounded-full ${i === step ? "bg-blue-400" : i < step ? "bg-blue-600" : "bg-neutral-600"}`} />
           ))}
         </div>
-
-        {/* Buttons */}
-        <div className="flex gap-2 px-5 pb-5">
-          <button
-            onClick={handleSkip}
-            className="flex-1 py-2 rounded-lg bg-neutral-700 hover:bg-neutral-600 text-[12px] text-neutral-400 transition-all"
-          >
-            Bỏ qua
-          </button>
-          <button
-            onClick={handleNext}
-            className="flex-1 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-[12px] text-white font-medium transition-all"
-          >
-            {isLast ? "Bắt đầu chơi!" : "Tiếp →"}
-          </button>
+        <div className="flex gap-2 px-4 pb-4">
+          <button onClick={handleSkip} className="flex-1 py-1.5 rounded-lg bg-neutral-700 text-[11px] text-neutral-400">Bỏ qua</button>
+          <button onClick={handleNext} className="flex-1 py-1.5 rounded-lg bg-blue-600 text-[11px] text-white font-medium">{isLast ? "Bắt đầu!" : "Tiếp →"}</button>
         </div>
       </div>
     </div>

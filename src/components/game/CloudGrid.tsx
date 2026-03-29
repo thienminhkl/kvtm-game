@@ -1,8 +1,10 @@
 "use client";
 
-import { useGameStore, CLOUD_LAYER_COUNT } from "@/lib/game";
+import { useGameStore } from "@/lib/game";
 import PotSlot from "./PotSlot";
 import BirdAI from "./BirdAI";
+
+const HANGING_DECORS = ["🎐", "🏮", "🪁", "🎈"];
 
 export default function CloudGrid() {
   const activeCloudIndex = useGameStore((s) => s.activeCloudIndex);
@@ -11,18 +13,29 @@ export default function CloudGrid() {
 
   if (!cloud) return null;
 
-  // Floor 1 = bottom (index 0), floor 8 = top (index 7)
-  const floorNumber = activeCloudIndex + 1;
+  const decor = HANGING_DECORS[activeCloudIndex % HANGING_DECORS.length];
 
   return (
     <div className="relative w-full max-w-[620px]">
-      <div className="relative p-3 rounded-2xl bg-gradient-to-b from-white/10 via-white/5 to-transparent border border-white/10 animate-cloud-float">
-        {/* Cloud puffs */}
-        <div className="absolute -top-3 left-[10%] w-12 h-6 bg-white/10 rounded-full blur-sm" />
-        <div className="absolute -top-2 left-[40%] w-16 h-7 bg-white/10 rounded-full blur-sm" />
-        <div className="absolute -top-3 right-[15%] w-10 h-5 bg-white/10 rounded-full blur-sm" />
+      {/* Cloud feathered top edge */}
+      <div className="cloud-feather-top h-3 w-full rounded-t-2xl" />
 
-        {/* Horizontal 9 slots */}
+      {/* Main cloud platform */}
+      <div className="relative cloud-platform p-3 border border-white/15 animate-cloud-float">
+        {/* Cloud puffs on top */}
+        <div className="absolute -top-2 left-[8%] w-14 h-7 bg-white/12 rounded-full blur-md" />
+        <div className="absolute -top-3 left-[35%] w-20 h-8 bg-white/10 rounded-full blur-md" />
+        <div className="absolute -top-2 right-[12%] w-12 h-6 bg-white/12 rounded-full blur-md" />
+
+        {/* Hanging decorations from cloud bottom */}
+        <div className="absolute -bottom-6 left-[15%] animate-hang-sway text-lg opacity-50">
+          {decor}
+        </div>
+        <div className="absolute -bottom-4 right-[25%] animate-hang-sway text-sm opacity-40" style={{ animationDelay: "2s" }}>
+          {HANGING_DECORS[(activeCloudIndex + 2) % HANGING_DECORS.length]}
+        </div>
+
+        {/* 9 slots horizontal */}
         <div className="relative grid grid-cols-9 gap-1.5">
           {cloud.slots.map((slot, index) => (
             <div key={slot.id} className="relative">
@@ -40,11 +53,8 @@ export default function CloudGrid() {
         <BirdAI />
       </div>
 
-      {/* Floor number bottom-right */}
-      <div className="absolute -bottom-1 -right-2 flex items-center gap-0.5">
-        <span className="text-[10px] text-neutral-500">Tầng</span>
-        <span className="text-lg font-bold text-white/80 leading-none">{floorNumber}</span>
-      </div>
+      {/* Cloud feathered bottom edge */}
+      <div className="cloud-feather-bottom h-3 w-full rounded-b-2xl" />
     </div>
   );
 }

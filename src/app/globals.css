@@ -1,18 +1,22 @@
 @import "tailwindcss";
 
-/* Cloud float animation */
+/* ============================================================
+   KVTM Visual Styles (per UI/UX spec)
+   Art style: Chibi, 2D Digital Painting, soft-shading
+   ============================================================ */
+
+/* --- Animations --- */
+
 @keyframes cloud-float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-3px); }
 }
 
-/* Growth pulse animation */
 @keyframes growth-pulse {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.08); }
 }
 
-/* Bird fly animation */
 @keyframes bird-fly {
   0% { transform: translate(var(--bird-from-x), var(--bird-from-y)) scale(0.8); opacity: 0; }
   15% { opacity: 1; }
@@ -20,51 +24,279 @@
   100% { transform: translate(var(--bird-to-x), var(--bird-to-y)) scale(0.8); opacity: 0; }
 }
 
-/* Beanstalk sway */
 @keyframes vine-sway {
   0%, 100% { transform: skewX(0deg); }
-  25% { transform: skewX(1deg); }
-  75% { transform: skewX(-1deg); }
+  25% { transform: skewX(0.5deg); }
+  75% { transform: skewX(-0.5deg); }
 }
 
-/* Ready harvest bounce */
 @keyframes ready-bounce {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-4px); }
 }
 
-/* Monkey scan highlight */
 @keyframes scan-pulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.4); }
   50% { box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.2); }
 }
 
-.animate-cloud-float {
-  animation: cloud-float 4s ease-in-out infinite;
-}
-
-.animate-growth-pulse {
-  animation: growth-pulse 0.4s ease-in-out;
-}
-
-.animate-bird-fly {
-  animation: bird-fly 1s ease-in-out forwards;
-}
-
-.animate-vine-sway {
-  animation: vine-sway 6s ease-in-out infinite;
-}
-
-.animate-ready-bounce {
-  animation: ready-bounce 0.8s ease-in-out infinite;
-}
-
-.animate-scan-pulse {
-  animation: scan-pulse 1s ease-in-out infinite;
-}
-
-/* Toast slide down */
 @keyframes slideDown {
   from { transform: translateY(-20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 0; transform: scale(0.5); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { text-shadow: 0 0 4px rgba(255,255,255,0.3); }
+  50% { text-shadow: 0 0 10px rgba(255,255,255,0.6), 0 0 20px rgba(100,200,255,0.3); }
+}
+
+@keyframes float-up {
+  from { transform: translateY(0); opacity: 1; }
+  to { transform: translateY(-30px); opacity: 0; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* --- Utility Classes --- */
+
+.animate-cloud-float { animation: cloud-float 4s ease-in-out infinite; }
+.animate-growth-pulse { animation: growth-pulse 0.4s ease-in-out; }
+.animate-bird-fly { animation: bird-fly 1s ease-in-out forwards; }
+.animate-vine-sway { animation: vine-sway 6s ease-in-out infinite; }
+.animate-ready-bounce { animation: ready-bounce 0.8s ease-in-out infinite; }
+.animate-scan-pulse { animation: scan-pulse 1s ease-in-out infinite; }
+.animate-sparkle { animation: sparkle 1.5s ease-in-out infinite; }
+.animate-glow { animation: glow-pulse 2s ease-in-out infinite; }
+.animate-float-up { animation: float-up 0.6s ease-out forwards; }
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2s linear infinite;
+}
+
+/* --- Wood Texture (Toolbar) --- */
+.bg-wood {
+  background: linear-gradient(180deg, #8B6914 0%, #6B4F12 50%, #5A4210 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(0,0,0,0.3);
+}
+
+.bg-wood-btn {
+  background: linear-gradient(180deg, #A67C2E 0%, #8B6914 50%, #6B4F12 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.2), 0 2px 4px rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.bg-wood-btn:hover {
+  background: linear-gradient(180deg, #B8912F 0%, #A67C2E 50%, #8B6914 100%);
+}
+
+.bg-wood-btn-active {
+  background: linear-gradient(180deg, #6B4F12 0%, #8B6914 50%, #A67C2E 100%);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.4), 0 0 8px rgba(255,200,50,0.3);
+}
+
+/* --- Glassmorphism (Panels) --- */
+.glass {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.glass-dark {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* --- Glow Effects --- */
+.glow-white {
+  text-shadow: 0 0 6px rgba(255,255,255,0.5), 0 0 12px rgba(255,255,255,0.2);
+}
+
+.glow-gold {
+  text-shadow: 0 0 6px rgba(255,200,50,0.5), 0 0 12px rgba(255,200,50,0.2);
+}
+
+.glow-green {
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.3);
+}
+
+.glow-floor {
+  text-shadow: 0 0 8px rgba(255,255,255,0.6), 0 0 16px rgba(100,200,255,0.3);
+}
+
+/* --- Pot Tier Styling --- */
+.pot-soil {
+  background: linear-gradient(180deg, #8B6914 0%, #5C3D0E 100%);
+  border-color: #6B4F12;
+}
+
+.pot-bronze {
+  background: linear-gradient(180deg, #CD7F32 0%, #8B5A2B 100%);
+  border-color: #B8860B;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+.pot-silver {
+  background: linear-gradient(180deg, #C0C0C0 0%, #808080 100%);
+  border-color: #A8A8A8;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), 0 0 4px rgba(200,200,200,0.2);
+}
+
+.pot-gold {
+  background: linear-gradient(180deg, #FFD700 0%, #B8860B 100%);
+  border-color: #DAA520;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 0 8px rgba(255,215,0,0.3);
+}
+
+.pot-diamond {
+  background: linear-gradient(180deg, #00CED1 0%, #008B8B 100%);
+  border-color: #20B2AA;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 0 12px rgba(0,206,209,0.3);
+}
+
+/* --- Parallax Background --- */
+.bg-parallax-cloud {
+  background:
+    radial-gradient(ellipse 120px 60px at 10% 20%, rgba(255,255,255,0.08) 0%, transparent 70%),
+    radial-gradient(ellipse 160px 70px at 40% 15%, rgba(255,255,255,0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 100px 50px at 70% 25%, rgba(255,255,255,0.07) 0%, transparent 70%),
+    radial-gradient(ellipse 140px 60px at 90% 10%, rgba(255,255,255,0.05) 0%, transparent 70%);
+}
+
+/* --- Text with stroke (per spec: font không chân, viền đen) --- */
+.text-stroke {
+  -webkit-text-stroke: 1px rgba(0,0,0,0.6);
+  paint-order: stroke fill;
+}
+
+.text-stroke-thin {
+  -webkit-text-stroke: 0.5px rgba(0,0,0,0.4);
+  paint-order: stroke fill;
+}
+
+/* ============================================================
+   World Building Styles (per Gemini spec)
+   ============================================================ */
+
+/* --- Beanstalk --- */
+@keyframes leaf-sway {
+  0%, 100% { transform: rotate(-5deg); }
+  50% { transform: rotate(5deg); }
+}
+
+@keyframes water-wheel {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes cloud-drift {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100vw); }
+}
+
+@keyframes hang-sway {
+  0%, 100% { transform: rotate(-3deg) translateY(0); }
+  50% { transform: rotate(3deg) translateY(-2px); }
+}
+
+@keyframes firefly {
+  0%, 100% { opacity: 0; transform: scale(0.5); }
+  30% { opacity: 1; transform: scale(1); }
+  70% { opacity: 0.8; transform: scale(0.8); }
+}
+
+@keyframes sun-ray {
+  0%, 100% { opacity: 0.1; }
+  50% { opacity: 0.25; }
+}
+
+.animate-leaf-sway { animation: leaf-sway 3s ease-in-out infinite; }
+.animate-water-wheel { animation: water-wheel 8s linear infinite; }
+.animate-cloud-drift { animation: cloud-drift 60s linear infinite; }
+.animate-hang-sway { animation: hang-sway 4s ease-in-out infinite; }
+.animate-firefly { animation: firefly 3s ease-in-out infinite; }
+.animate-sun-ray { animation: sun-ray 4s ease-in-out infinite; }
+
+/* --- Beanstalk trunk --- */
+.beanstalk-trunk {
+  background: linear-gradient(90deg, #1a472a 0%, #2d6a3f 30%, #1a472a 50%, #2d6a3f 70%, #1a472a 100%);
+  box-shadow: inset 2px 0 4px rgba(0,0,0,0.3), inset -2px 0 4px rgba(0,0,0,0.3);
+}
+
+.beanstalk-leaf {
+  background: radial-gradient(ellipse at 30% 50%, #4ade80 0%, #22c55e 50%, #15803d 100%);
+  box-shadow: inset 1px 1px 2px rgba(255,255,255,0.2);
+}
+
+/* --- Cloud platform --- */
+.cloud-platform {
+  background: linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.08) 100%);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.3);
+}
+
+.cloud-feather-top {
+  background: radial-gradient(ellipse 40px 15px at 50% 100%, rgba(255,255,255,0.2) 0%, transparent 70%);
+}
+
+.cloud-feather-bottom {
+  background: radial-gradient(ellipse 40px 15px at 50% 0%, rgba(255,255,255,0.15) 0%, transparent 70%);
+}
+
+/* --- Jack's House --- */
+.house-body {
+  background: linear-gradient(180deg, #8B6914 0%, #6B4F12 100%);
+  border: 2px solid #5A4210;
+}
+
+.house-roof {
+  background: linear-gradient(180deg, #2E7D32 0%, #1B5E20 100%);
+  clip-path: polygon(0% 100%, 50% 0%, 100% 100%);
+}
+
+.house-window {
+  background: radial-gradient(circle, #FFE082 0%, #FFA000 100%);
+  box-shadow: 0 0 10px rgba(255,200,50,0.5);
+}
+
+/* --- Ground --- */
+.ground-grass {
+  background: linear-gradient(180deg, #4CAF50 0%, #388E3C 50%, #2E7D32 100%);
+}
+
+.cobblestone {
+  background:
+    radial-gradient(circle 3px at 10% 20%, #9E9E9E 100%, transparent 100%),
+    radial-gradient(circle 2px at 25% 60%, #BDBDBD 100%, transparent 100%),
+    radial-gradient(circle 3px at 40% 30%, #9E9E9E 100%, transparent 100%),
+    radial-gradient(circle 2px at 55% 70%, #BDBDBD 100%, transparent 100%),
+    radial-gradient(circle 3px at 70% 40%, #9E9E9E 100%, transparent 100%),
+    radial-gradient(circle 2px at 85% 55%, #BDBDBD 100%, transparent 100%);
+  background-color: #757575;
+}
+
+/* --- Parallax layers --- */
+.parallax-near { transform: translateZ(0); }
+.parallax-mid { transform: translateZ(-1px) scale(2); }
+.parallax-far { transform: translateZ(-2px) scale(3); }
+
+/* --- Day/Night --- */
+.filter-night {
+  background: linear-gradient(180deg, rgba(25,25,80,0.6) 0%, rgba(40,20,60,0.5) 100%);
+  pointer-events: none;
+}
+
+.filter-sunset {
+  background: linear-gradient(180deg, rgba(255,100,0,0.15) 0%, rgba(255,50,0,0.1) 100%);
+  pointer-events: none;
 }

@@ -124,62 +124,10 @@ function calculateRewards(
 }
 
 // ============================================================
-// Sandbox Initial Data
+// Initial Data
 // ============================================================
 
-function createSandboxUser() {
-  return {
-    level: 99,
-    exp: 0,
-    expToNextLevel: getExpForLevel(99),
-    gold: 9999999,
-    ruby: 999,
-  };
-}
-
-function createSandboxInventory() {
-  return {
-    seeds: {
-      linh_lan: 99,
-      hoa_cuc: 99,
-      hoa_hong: 99,
-      hong_trang: 99,
-      hoa_tulip: 99,
-      hoa_huong_duong: 99,
-      cay_tao: 99,
-      cay_dau: 99,
-      cay_ngo: 99,
-    },
-    pots: {
-      pot_soil: 99,
-      pot_bronze: 99,
-      pot_silver: 99,
-      pot_gold: 99,
-      pot_diamond: 99,
-    },
-    tools: {
-      waterCan: 99,
-      insectNet: 99,
-      harvestBasket: 99,
-      banana: 99,
-    },
-    fertilizers: {
-      fertilizer_basic: 99,
-      fertilizer_advanced: 99,
-      fertilizer_premium: 99,
-    },
-    pests: {
-      beetle: 99,
-      caterpillar: 99,
-      snail: 99,
-      dragonfly: 99,
-    },
-  };
-}
-
-// --- Production Mode Initial Data ---
-
-function createProductionUser() {
+function createInitialUser() {
   return {
     level: 1,
     exp: 0,
@@ -189,7 +137,7 @@ function createProductionUser() {
   };
 }
 
-function createProductionInventory() {
+function createInitialInventory() {
   return {
     seeds: {
       linh_lan: 5,
@@ -200,6 +148,7 @@ function createProductionInventory() {
       hoa_huong_duong: 0,
       cay_tao: 0,
       cay_dau: 0,
+      cay_ngo: 0,
     },
     pots: {
       pot_soil: 3,
@@ -228,20 +177,17 @@ function createProductionInventory() {
   };
 }
 
-const IS_SANDBOX = true; // Toggle this for production mode
-
 // ============================================================
 // Store
 // ============================================================
 
 export const useGameStore = create<GameStore>((set, get) => ({
-  // --- Initial Data ---
-  user: IS_SANDBOX ? createSandboxUser() : createProductionUser(),
-  inventory: IS_SANDBOX ? createSandboxInventory() : createProductionInventory(),
+  user: createInitialUser(),
+  inventory: createInitialInventory(),
   clouds: createInitialClouds(),
   monkey: {
     isActive: false,
-    bananasRemaining: IS_SANDBOX ? 99 : 0,
+    bananasRemaining: 0,
     autoPlantSeedId: null,
     currentSlotIndex: 0,
     isActing: false,
@@ -264,9 +210,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
   selectedPotId: null,
   selectedFertilizerId: null,
   activeCloudIndex: 0,
-
-  // --- Sandbox/Production ---
-  isSandbox: IS_SANDBOX,
 
   // --- Daily Reward ---
   lastDailyReward: null,
@@ -889,45 +832,21 @@ export const useGameStore = create<GameStore>((set, get) => ({
   resetGame: () => {
     localStorage.removeItem("kvtm_save");
     set({
-      user: IS_SANDBOX ? createSandboxUser() : createProductionUser(),
-      inventory: IS_SANDBOX ? createSandboxInventory() : createProductionInventory(),
+      user: createInitialUser(),
+      inventory: createInitialInventory(),
       clouds: createInitialClouds(),
       machines: [
         { id: "juicer", craftingRecipeIndex: null, craftingRemainingTime: 0, hasProduct: false },
         { id: "oven", craftingRecipeIndex: null, craftingRemainingTime: 0, hasProduct: false },
         { id: "dryer", craftingRecipeIndex: null, craftingRemainingTime: 0, hasProduct: false },
       ],
-      monkey: { isActive: false, bananasRemaining: IS_SANDBOX ? 99 : 0, autoPlantSeedId: null, currentSlotIndex: 0, isActing: false },
+      monkey: { isActive: false, bananasRemaining: 0, autoPlantSeedId: null, currentSlotIndex: 0, isActing: false },
       activeCloudIndex: 0,
       activeTool: null,
       selectedSeedId: null,
       selectedPotId: null,
       selectedFertilizerId: null,
       currentView: "cloud",
-    });
-  },
-
-  // --- Sandbox Toggle ---
-  toggleSandbox: () => {
-    set((s) => {
-      const newIsSandbox = !s.isSandbox;
-      return {
-        isSandbox: newIsSandbox,
-        user: newIsSandbox ? createSandboxUser() : createProductionUser(),
-        inventory: newIsSandbox ? createSandboxInventory() : createProductionInventory(),
-        clouds: createInitialClouds(),
-        machines: [
-          { id: "juicer", craftingRecipeIndex: null, craftingRemainingTime: 0, hasProduct: false },
-          { id: "oven", craftingRecipeIndex: null, craftingRemainingTime: 0, hasProduct: false },
-          { id: "dryer", craftingRecipeIndex: null, craftingRemainingTime: 0, hasProduct: false },
-        ],
-        monkey: { isActive: false, bananasRemaining: newIsSandbox ? 99 : 0, autoPlantSeedId: null, currentSlotIndex: 0, isActing: false },
-        activeCloudIndex: 0,
-        activeTool: null,
-        selectedSeedId: null,
-        selectedPotId: null,
-        selectedFertilizerId: null,
-      };
     });
   },
 

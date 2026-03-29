@@ -167,14 +167,16 @@ export default function PotSlot({ slot }: PotSlotProps) {
         </>
       )}
 
-      {/* Pot only */}
+      {/* Pot only - CSS pot shape */}
       {potId && !plant && (
-        <>
-          <span className="text-lg opacity-60">🏺</span>
-          <span className="text-[8px] text-neutral-500 truncate w-full text-center select-none">
-            {potDef?.name}
-          </span>
-        </>
+        <div className="flex flex-col items-center justify-center h-full">
+          <div className={`${getPotColor(potId)} w-8 h-6 rounded-b-lg relative`}>
+            <div className="absolute -top-1 left-0 right-0 h-1.5 bg-inherit rounded-t-sm border-t border-l border-r border-inherit" />
+          </div>
+          {potDef && potDef.expBuffPercent > 0 && (
+            <span className="text-[7px] text-green-400/60 mt-0.5">+{potDef.expBuffPercent}%</span>
+          )}
+        </div>
       )}
 
       {/* Plant */}

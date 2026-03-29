@@ -224,9 +224,7 @@ export interface GameStore {
   loadGame: () => boolean;
   resetGame: () => void;
 
-  // Sandbox toggle
-  isSandbox: boolean;
-  toggleSandbox: () => void;
+  // Daily reward
 
   // Daily reward
   lastDailyReward: number | null;
